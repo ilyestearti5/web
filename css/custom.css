@@ -1,0 +1,82 @@
+:root {
+  --selected-row-background: #27f3;
+  --icon-size-toolbar: 26px;
+}
+
+body {
+  background-color: #eee;
+  color: #222;
+}
+
+[role=table],
+[role=listbox],
+[role=tree] {
+  padding: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+[role=table]:focus,
+[role=listbox]:focus,
+[role=tree]:focus {
+  outline: 1px solid var(--selected-row-background);
+  outline-offset: -1px;
+}
+
+[role=toolbar] {
+  display: inline-flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+[role=toolbar] > li[aria-label] {
+  width: var(--icon-size-toolbar);
+  height: var(--icon-size-toolbar);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+[role=toolbar] > li[aria-label]:hover {
+  background-color: rgba(136, 136, 136, 0.1333333333);
+}
+
+[role=treeitem][aria-selected=true] {
+  background-color: var(--selected-row-background);
+}
+
+[role=row] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  cursor: pointer;
+}
+[role=row]:not(:last-child) {
+  margin-bottom: 1px;
+}
+[role=row]:nth-child(even) {
+  background-color: rgba(85, 85, 85, 0.0666666667);
+}
+[role=row]:hover {
+  background-color: rgba(136, 136, 136, 0.0666666667);
+}
+[role=row] [role=col] {
+  display: inline-block;
+  width: 100%;
+  padding: 4px;
+}
+[role=row][aria-selected=true] {
+  background-color: var(--selected-row-background);
+}
+[role=row][aria-disabled=true] {
+  color: rgba(136, 136, 136, 0.2666666667);
+  text-decoration: line-through;
+  pointer-events: none;
+  cursor: alias;
+}/*# sourceMappingURL=custom.css.map */

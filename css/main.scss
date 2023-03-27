@@ -1,0 +1,137 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Tahoma, sans-serif;
+  min-height: 100vh;
+}
+
+input,
+textarea,
+button,
+[contenteditable="true"] {
+  outline: none;
+  border: none;
+}
+
+[contenteditable="true"]:focus {
+  outline: 1px solid #0004;
+  outline-offset: -1px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  background-color: transparent;
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #37f;
+  border-radius: 4px;
+}
+.full-w {
+  width: 100%;
+}
+
+.full-h {
+  height: 100%;
+}
+
+$positions: absolute, fixed, relative, static, sticky;
+
+@each $pos in $positions {
+  .#{str-slice($pos, 0, 3)} {
+    position: $pos;
+  }
+}
+
+$displayes: flex, table, grid, block, none, inline, list-item, ruby, contents,
+  flow-root;
+
+@each $disp in $displayes {
+  .d-#{str-slice($disp, 0, 3)} {
+    display: $disp;
+  }
+}
+
+@mixin getSizeNumber(
+  $short-named,
+  $property,
+  $i,
+  $start: 1,
+  $multi: 10px,
+  $XAndYdirection: "yes",
+  $direction: "yes"
+) {
+  $size: ($i + $start) * $multi;
+  .#{$short-named}-#{$i} {
+    #{$property}: $size;
+  }
+  @if ($XAndYdirection == "yes") {
+    .#{$short-named}X-#{$i} {
+      #{$property}: {
+        left: $size;
+        right: $size;
+      }
+    }
+    .#{$short-named}Y-#{$i} {
+      #{$property}: {
+        top: $size;
+        bottom: $size;
+      }
+    }
+  }
+  @if ($direction == "yes") {
+    .#{$short-named}L-#{$i} {
+      #{$property}: {
+        left: $size;
+      }
+    }
+    .#{$short-named}T-#{$i} {
+      #{$property}: {
+        top: $size;
+      }
+    }
+    .#{$short-named}B-#{$i} {
+      #{$property}: {
+        bottom: $size;
+      }
+    }
+    .#{$short-named}R-#{$i} {
+      #{$property}: {
+        right: $size;
+      }
+    }
+  }
+}
+@for $i from 1 through 10 {
+  @include getSizeNumber("pad", "padding", $i);
+  @include getSizeNumber("mar", "margin", $i);
+  @include getSizeNumber("rdc", "border-radius", $i, 1, 8px, "none", "none");
+  @include getSizeNumber("fnt", "font-size", $i, 2, 4px, "none", "none");
+  @include getSizeNumber("w", "width", $i, 1, 90px, "none", "none");
+  @include getSizeNumber("h", "height", $i, 1, 90px, "none", "none");
+  @include getSizeNumber("l", "left", $i, -1, 10px, "none", "none");
+  @include getSizeNumber("r", "right", $i, -1, 10px, "none", "none");
+  @include getSizeNumber("t", "top", $i, -1, 10px, "none", "none");
+  @include getSizeNumber("b", "bottom", $i, -1, 10px, "none", "none");
+  @if ($i != 10) {
+    @include getSizeNumber("bld", "font-weight", $i, 0, 100, "none", "none");
+  }
+  .sqr-#{$i} {
+    width: $i * 10px + 10px;
+    height: $i * 10px + 10px;
+  }
+  .shadow-#{$i} {
+    box-shadow: 0px 0px $i * 2px $i * 3.2px #7774;
+  }
+  [aria-level="#{$i}"] {
+    padding-left: $i * 30px;
+  }
+}
