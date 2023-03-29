@@ -42,8 +42,29 @@ body {
   background-color: rgba(136, 136, 136, 0.1333333333);
 }
 
+[role=treeitem] {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+[role=treeitem] > [role=row] {
+  width: 100%;
+}
 [role=treeitem][aria-selected=true] {
   background-color: var(--selected-row-background);
+}
+[role=treeitem] > [role=open-close] {
+  display: block;
+  position: relative;
+  top: 50%;
+  height: 2em;
+  width: 20px;
+}
+[role=treeitem] > [role=open-close]:hover {
+  background-color: rgba(136, 136, 136, 0.0666666667);
+}
+[role=treeitem]:not(:last-child) {
+  margin-bottom: 1px;
 }
 
 [role=row] {

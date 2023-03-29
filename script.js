@@ -1,24 +1,103 @@
-
 import { TreeLinear } from "./lib/tree-linear.js"
 
-var tr = TreeLinear.create("Explorer", { name: "No Provied", type: "folder" });
-
-document.body.appendChild(tr.root);
+var tr = TreeLinear.create("Explorer", { name: "New Directory", type: "folder" });
 
 tr.hiddenPropertys = ["type"];
 
+document.body.appendChild(tr.root);
+
 tr.setCallbackQuery((d) => `${d.name}`);
 
-tr.methodeSync("append", undefined, { name: "My Frame Work" });
+function getCssSass(name) {
+  return [
+    {
+      body: {
+        name: name + ".css",
+        type: "file"
+      },
+    },
+    {
+      body: {
+        name: name + ".map.css",
+        type: "file"
+      }
+    },
+    {
+      body: {
+        name: name + ".scss",
+        type: "file"
+      }
+    }
+  ]
+}
 
-tr.methodeSync("append", "My Frame Work", { name: "lib" }, { name: "css" }, { name: "web" })
-tr.methodeSync("append", "My Frame Work", { name: "lib" }, { name: "css" }, { name: "web" });
-tr.methodeSync("append", "My Frame Work/lib", { name: "delay.ts", type: "file" }, { name: "delay.js", type: "file" })
+function getJsTs(name) {
+  return [
+    {
+      body: {
+        name: name + ".js",
+        type: "file",
+      }
+    },
+    {
+      body: {
+        name: name + ".ts",
+        type: "folder"
+      }
+    }
+  ]
+}
 
-// tr.insertSync("My Frame Work/web",
-//     { body: { name: "index.html", type: "file" } },
-//     {
-//         body: { name: "css" },
-//         innerTree: [{ body: { name: "main.css", type: "file" } }, { body: { name: "main.scss", type: "file" } }]
-//     }
-// )
+tr.methode("insert", undefined, 20, 1, {
+  body: {
+    name: "web"
+  },
+  innerTree:
+    [
+      {
+        body: {
+          name: "css",
+        },
+        innerTree: [
+          ...getCssSass("custom"), ...getCssSass("main")
+        ]
+      },
+      {
+        body: {
+          name: "lib"
+        },
+        innerTree: [
+          ...getJsTs("delay"),
+          ...getJsTs("graphe"),
+          ...getJsTs("keyboard-shortcut"),
+          ...getJsTs("listbox"),
+          ...getJsTs("table"),
+          ...getJsTs("toolbar"),
+          ...getJsTs("tree-linear"),
+          ...getJsTs("tree"),
+          {
+            body: { name: "tsconfig.json", type: "file" },
+          },
+          ...getJsTs("types"),
+          ...getJsTs("utils"),
+        ]
+      },
+      {
+        body: {
+          name: "index.html",
+          type: "file"
+        }
+      },
+      {
+        body: {
+          name: "script.js",
+          type: "file"
+        },
+      }
+    ]
+}).then(() => {
+})
+
+tr.onsubmit((type) => console.log(`${type}`));
+
+window.tree = tr;

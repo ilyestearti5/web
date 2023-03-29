@@ -29,7 +29,7 @@ a {
 
 ::-webkit-scrollbar {
   background-color: transparent;
-  width: 6px;
+  width: 0px;
 }
 ::-webkit-scrollbar-thumb {
   background-color: #37f;
@@ -134,4 +134,9 @@ $displayes: flex, table, grid, block, none, inline, list-item, ruby, contents,
   [aria-level="#{$i}"] {
     padding-left: $i * 30px;
   }
+}
+
+.dark {
+  background-color: #151515;
+  color: #fff;
 }

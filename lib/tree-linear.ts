@@ -1,6 +1,13 @@
 import { KeyboardShortcut } from "./keyboard-shortcuts.js";
 import { ListBox } from "./listbox.js";
-import { Row, ConvertionQueryData , tree , CallBackQuery, MethodTreeLinear } from "./types.js";
+import {
+  Row,
+  ConvertionQueryData,
+  tree,
+  CallBackQuery,
+  MethodTreeLinear,
+  ClipboardEventTreeLinear,
+} from "./types.js";
 import { createElement, defaultObject, forEachAsync } from "./utils.js";
 
 export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
@@ -18,7 +25,9 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     if (!this.root.contains(document.activeElement)) return;
     (document.activeElement as HTMLElement)?.blur();
   });
+  #clipboardhistory: ClipboardEventTreeLinear<T>[] = [];
   #callbackQuery: CallBackQuery<T> = (d: T, i: number) => `${i}`;
+  public separator: string = "/";
   constructor(
     root: U,
     title: string,
@@ -81,6 +90,7 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       }),
     };
     this.root.prepend(this.#parentRoot);
+    this.rowString = "treeitem";
   }
   get propertys(): (keyof T)[] {
     return this.#propertys;
@@ -96,6 +106,9 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     this.columns(this.#hiddenPropertys).forEach((eles) =>
       eles.forEach((ele) => (ele.style.display = "none"))
     );
+  }
+  get clipboardHistory() {
+    return this.#clipboardhistory;
   }
   #getWritable() {
     return this.#writable;
@@ -127,6 +140,10 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       role: "treeitem",
       "aria-level": level,
     });
+    const span = createElement("span", "", { role: "open-close" });
+    result.appendChild(span);
+    span.onclick = () => this.#toggle(result);
+
     var row = createElement("div", "", { role: "row" });
     result.appendChild(row);
     this.#propertys.forEach((prop) => {
@@ -136,7 +153,6 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     });
     return result;
   }
-
   readRow(element: HTMLElement): T & Row {
     var o: T & Row = Object.create(null);
 
@@ -240,6 +256,9 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       } else ele.removeAttribute("inneropened");
     });
   }
+  #toggle(element: HTMLElement) {
+    this.#isClosed(element) ? this.#open(element) : this.#close(element);
+  }
   open(element: HTMLElement | string) {
     element = this.convertTo(element, "element");
     this.#open(element);
@@ -247,6 +266,10 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   close(element: HTMLElement | string) {
     element = this.convertTo(element, "element");
     this.#close(element);
+  }
+  toggle(element: HTMLElement | string) {
+    element = this.convertTo(element, "element");
+    this.#toggle(element);
   }
   #isOpend(element: HTMLElement) {
     return this.#innerTree(element).every(
@@ -274,12 +297,12 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     var index = inner.indexOf(element);
 
     return (
-      (outer ? this.#toQuery(outer) + "/" : "") +
+      (outer ? this.#toQuery(outer) + this.separator : "") +
       this.#callbackQuery(this.readRow(element), index)
     );
   }
   #toElement(query: string) {
-    var array = query.split("/");
+    var array = query.split(this.separator);
 
     var element = this.#parentRoot;
 
@@ -420,8 +443,8 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       async ({ body, innerTree }) => {
         var ele = this.createRow(body, level);
 
-        var inner = this.#innerTree(element);
-        var mainElement = inner.length ? inner[inner.length - 1] : element;
+        var childs = this.#childs(element);
+        var mainElement = childs.length ? childs[childs.length - 1] : element;
 
         mainElement.after(ele);
 
@@ -432,6 +455,15 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       timeout,
       limit
     );
+  }
+  #childs(element: HTMLElement) {
+    var result: HTMLElement[] = [element];
+
+    this.#innerTree(element).forEach((ele) =>
+      result.push(...this.#childs(ele))
+    );
+
+    return result;
   }
   async #methode<M extends keyof MethodTreeLinear<T>>(
     name: M,
@@ -531,13 +563,16 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     element && (await this.#delete(element));
   }
   async #delete(element: HTMLElement) {
+    var result: HTMLElement[] = [];
     await forEachAsync(
       this.#innerTree(element),
-      async (ele) => await this.#delete(ele),
+      async (ele) => result.push(...(await this.#delete(ele))),
       4,
       1
     );
     element.remove();
+    result.push(element);
+    return result;
   }
   json(...elements: HTMLElement[]) {
     var fn = (treeContent: tree<T & Row>): tree<T> => {
@@ -551,25 +586,25 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     return elements.map((element) => fn(this.read(element)));
   }
   async copy() {
-    await navigator.clipboard.writeText(
-      JSON.stringify(this.json(...this.SELECT_ELEMENTS), undefined, 1)
-    );
+    var json = this.json(...this.SELECT_ELEMENTS);
+    await navigator.clipboard.writeText(JSON.stringify(json, undefined, 1));
+    this.#clipboardhistory.push({ content: json, event: "copy" });
   }
   async paste() {
     var content = JSON.parse(await navigator.clipboard.readText());
     var array = (Array.isArray(content) ? content : [content]) as tree<T>[];
     var last = this.LAST_ELEMENT_SELECT;
-    console.log(last);
     last
-      ? this.#insert(last, 200, 2, ...array)
-      : this.#insert(this.#parentRoot, 20, 2, ...array);
+      ? this.#insert(last, 130, 2, ...array)
+      : this.#insert(this.#parentRoot, 130, 2, ...array);
+    this.#clipboardhistory.push({ content: array, event: "paste" });
   }
   async cut() {
     var elements = this.SELECT_ELEMENTS;
-    await navigator.clipboard.writeText(
-      JSON.stringify(this.json(...elements), undefined, 1)
-    );
-    await forEachAsync(elements, (ele) => this.#delete(ele), 20, 1);
+    var content = this.json(...elements);
+    await navigator.clipboard.writeText(JSON.stringify(content, undefined, 1));
+    await forEachAsync(elements, (ele) => this.#delete(ele), 130, 2);
+    this.#clipboardhistory.push({ content, event: "cut" });
   }
   columns(propertys: (keyof T)[]) {
     var indexes = propertys.map((prop) => this.#propertys.indexOf(prop));

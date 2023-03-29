@@ -4,7 +4,6 @@ import {
   submitListener,
   submitTypePress,
   ConfigListBox,
-  Struct,
   shortcutConfigurationsList,
 } from "./types.js";
 
@@ -22,34 +21,48 @@ export class ListBox<T extends HTMLElement> {
         `${this.title} - forword selection`,
         `Shift${KeyboardShortcut.separatorShortcuts}ArrowDown`,
         [this.root]
-      ).ondown(async () => {
+      ).ondown(() => {
         this.forwordSelection(1);
       }),
       backword: KeyboardShortcut.create(
         `${this.title} - backword selection`,
         `Shift${KeyboardShortcut.separatorShortcuts}ArrowUp`,
         [this.root]
-      ).ondown(async () => {
+      ).ondown(() => {
         this.backwordSelection(1);
       }),
     },
     move: {
       forword: KeyboardShortcut.create(`${this.title} - forword`, `ArrowDown`, [
         this.root,
-      ]).ondown(async () => {
+      ]).ondown((combinition, event) => {
+        event && event.preventDefault();
         this.forword(1);
       }),
       backword: KeyboardShortcut.create(`${this.title} - backword`, `ArrowUp`, [
         this.root,
-      ]).ondown(async () => {
+      ]).ondown((combinition, event) => {
+        event && event.preventDefault();
         this.backword(1);
       }),
+    },
+    status: {
+      submit: KeyboardShortcut.create(`${this.title} - submit`, `Enter`, [
+        this.root,
+      ]).ondown(() => {
+        this.#submit("keypress");
+      }),
+      cancel: KeyboardShortcut.create(`${this.title} - cancel`, "Escape", [
+        this.root,
+      ]).ondown(() => this.select()),
     },
     // has value in table & tree constructor
     clipboard: null,
     // has value in tree constructor
     inner: null,
   };
+
+  protected rowString = "row";
 
   #configurations: ConfigListBox = {
     movable: true,
@@ -85,7 +98,9 @@ export class ListBox<T extends HTMLElement> {
 
     if (!element) return;
 
-    var row = element.closest('[role="row"]') as HTMLElement | null;
+    var row = element.closest(
+      `[role="${this.rowString}"]`
+    ) as HTMLElement | null;
 
     if (!row) return;
 
@@ -100,7 +115,7 @@ export class ListBox<T extends HTMLElement> {
 
     this.root.setAttribute("role", "listbox");
 
-    this.root.ondragend = this.#drag_function;
+    this.root.ariaLabel = title;
 
     this.#title = title;
   }
@@ -111,6 +126,8 @@ export class ListBox<T extends HTMLElement> {
   set dragging(v: boolean) {
     v = Boolean(v);
     this.#dragging = v;
+
+    this.root.ondragend = v ? this.#drag_function : null;
 
     this.ITEMS.forEach((ele) => (ele.draggable = v));
   }
@@ -217,6 +234,8 @@ export class ListBox<T extends HTMLElement> {
     this.#shortcutsConfig.move.backword.targets?.push(...elements);
     this.#shortcutsConfig.selection.forword.targets?.push(...elements);
     this.#shortcutsConfig.selection.backword.targets?.push(...elements);
+    this.#shortcutsConfig.status.cancel.targets?.push(...elements);
+    this.#shortcutsConfig.status.submit.targets?.push(...elements);
   }
 
   getEffective(element: HTMLElement) {
@@ -452,13 +471,5 @@ export class ListBox<T extends HTMLElement> {
 
   static get all() {
     return this.#all;
-  }
-
-  static title<R extends keyof Struct<object>>(
-    title: string,
-    type: R
-  ): Struct<object>[R] | null {
-    var S = this.#all.find(({ title: tlt }) => title == tlt);
-    return S ? (S as Struct<object>[R]) : null;
   }
 }

@@ -13,7 +13,7 @@ export class KeyboardShortcut {
   static separatorShortcuts: string = "+";
   static separatorKeys: string = "|";
   static #main_keys: mainKeys[] = ["Ctrl", "Shift", "Alt"];
-  static #all: KeyboardShortcut[] = [];
+  static #all: Set<KeyboardShortcut> = new Set();
   static #keyboardKeys: allKeyboardKeys = {
     Backspace: 8,
     Tab: 9,
@@ -126,6 +126,7 @@ export class KeyboardShortcut {
 
   #on_down_fn: listenerKeyboardShortcut[] = [];
   #on_up_fn: listenerKeyboardShortcut[] = [];
+  #on_press_fn: listenerKeyboardShortcut[] = [];
   #main_fn = (event: KeyboardEvent) => {
     var {
       ctrlKey: Ctrl,
@@ -160,10 +161,14 @@ export class KeyboardShortcut {
         this.#on_up_fn.forEach((fn) => fn(o, event, "key"));
         break;
       }
+      case "press": {
+        this.#on_press_fn.forEach((fn) => fn(o, event, "key"));
+      }
     }
   };
   #down: boolean = false;
   #up: boolean = false;
+  #press: boolean = false;
   #activate: boolean = true;
   #propertys: propertyShortcut = {
     Ctrl: false,
@@ -175,12 +180,12 @@ export class KeyboardShortcut {
   targets: HTMLElement[] | null = null;
   #label: string = "";
   constructor(label: string, propertys: propertyShortcut) {
-    if (KeyboardShortcut.#all.some((s) => s.label == label))
+    if (Array.from(KeyboardShortcut.#all).some((s) => s.label == label))
       throw Error("Cannot be Used to Shortcut Has The Same Label");
     this.#label = label;
     this.#propertys = propertys;
     this.when.down = true;
-    KeyboardShortcut.#all.push(this);
+    KeyboardShortcut.#all.add(this);
   }
   get activate(): boolean {
     return this.#activate;
@@ -205,6 +210,7 @@ export class KeyboardShortcut {
         a.when = {
           down: v,
           up: a.#up,
+          press: a.#press,
         };
       },
       get up() {
@@ -214,6 +220,17 @@ export class KeyboardShortcut {
         a.when = {
           down: a.#down,
           up: v,
+          press: a.#press,
+        };
+      },
+      get press() {
+        return a.#press;
+      },
+      set press(v: boolean) {
+        a.when = {
+          down: a.#down,
+          up: a.#up,
+          press: v,
         };
       },
     };
@@ -231,6 +248,11 @@ export class KeyboardShortcut {
       if (v.up) document.addEventListener("keyup", this.#main_fn);
       else document.removeEventListener("keyup", this.#main_fn);
       this.#up = v.up;
+    }
+    if (v.press != this.#press) {
+      if (v.press) document.addEventListener("keypress", this.#main_fn);
+      else document.removeEventListener("keypress", this.#main_fn);
+      this.#press = v.press;
     }
   }
   get text(): string {
@@ -376,26 +398,28 @@ export class KeyboardShortcut {
   }
   static #create(
     label: string = "",
-    input: propertyShortcut | string = "",
+    combinition: propertyShortcut | string = "",
     targets: null | HTMLElement[] = null
   ): KeyboardShortcut {
-    var result = new this(label, this.convertTo(input, "object"));
+    var result = new this(label, this.convertTo(combinition, "object"));
     result.targets = targets;
     return result;
   }
   static create(
     label: string = "",
-    input: propertyShortcut | string = "",
+    combinition: propertyShortcut | string = "",
     targets: null | HTMLElement[] = null
   ) {
-    return this.#create(label, input, targets);
+    return this.#create(label, combinition, targets);
   }
   static #exec(
-    input: string | propertyShortcut,
+    combinition: string | propertyShortcut,
     press: ("down" | "up")[]
-  ): KeyboardShortcut[] {
-    var shortcut = this.convertTo(input, "object");
-    var ready = this.#all.filter((shrt) => shrt.isValide(shortcut));
+  ): Set<KeyboardShortcut> {
+    var shortcut = this.convertTo(combinition, "object");
+    var ready = new Set(
+      Array.from(this.#all).filter((shrt) => shrt.isValide(shortcut))
+    );
     press.forEach((pressType) => {
       switch (pressType) {
         case "down": {
@@ -417,14 +441,17 @@ export class KeyboardShortcut {
 
     return ready;
   }
-  static exec(input: string | propertyShortcut, press: ("down" | "up")[]) {
-    return this.#exec(input, press);
+  static exec(
+    combinition: string | propertyShortcut,
+    ...press: ("down" | "up")[]
+  ) {
+    return this.#exec(combinition, press);
   }
   static #execCommand(
     label: string,
     press: ("down" | "up")[] = ["down"]
   ): KeyboardShortcut | null {
-    var fd = this.#all.find(({ label: lab }) => lab == label);
+    var fd = Array.from(this.#all).find(({ label: lab }) => lab == label);
     if (!fd) return null;
 
     for (let pressType of press) {
@@ -456,6 +483,7 @@ export class KeyboardShortcut {
     short.when = {
       down: true,
       up: true,
+      press: false,
     };
     return short;
   }
@@ -463,7 +491,7 @@ export class KeyboardShortcut {
     return this.#watch(...elements);
   }
   static label(labelName: string = ""): KeyboardShortcut | null {
-    var fd = this.#all.find((sh) => sh.#label == labelName);
+    var fd = Array.from(this.#all).find((sh) => sh.#label == labelName);
     return fd ? fd : null;
   }
   static #keyOf(v: number): keyof allKeyboardKeys | null {
@@ -475,7 +503,7 @@ export class KeyboardShortcut {
   static keyOf(keycode: number) {
     return this.#keyOf(keycode);
   }
-  static get all() {
-    return this.#all;
+  static get all(): KeyboardShortcut[] {
+    return Array.from(this.#all);
   }
 }

@@ -15,6 +15,7 @@ export interface convertionPropertyShortcut {
 export interface WhenShortcutOn {
   down: boolean;
   up: boolean;
+  press: boolean;
 }
 export interface ConfigListBox {
   movable: boolean;
@@ -35,7 +36,6 @@ export interface ConfigurationToolBar<T> {
   click: ((e: MouseEvent) => void) | null;
   element: HTMLAnchorElement;
 }
-
 export interface allKeyboardKeys {
   Backspace: number;
   Tab: number;
@@ -142,12 +142,6 @@ export interface allKeyboardKeys {
   Quote: number;
   // Add more keyboard event codes here as needed
 }
-
-export interface Struct<T> {
-  listbox: ListBox<HTMLElement>;
-  table: Table<HTMLElement, T>;
-}
-
 export interface shortcutConfigurationsList {
   clipboard: null | {
     copy: KeyboardShortcut;
@@ -162,22 +156,28 @@ export interface shortcutConfigurationsList {
     forword: KeyboardShortcut;
     backword: KeyboardShortcut;
   };
+  status: {
+    submit: KeyboardShortcut;
+    cancel: KeyboardShortcut;
+  };
   inner: null | {
     open: KeyboardShortcut;
     close: KeyboardShortcut;
   };
 }
-
 export interface tree<T> {
   body: T;
   innerTree: tree<T>[];
 }
-
 export interface MethodTreeLinear<T> {
   after: T;
   before: T;
   append: T;
   insert: tree<T>;
+}
+export interface ClipboardEventTreeLinear<T> {
+  content: tree<T>[];
+  event: clipboardStatus;
 }
 /**
  *
@@ -194,3 +194,5 @@ export type submitListener = (type: submitTypePress) => void;
 export type submitTypePress = "call" | "keypress" | "click";
 export type SortedBy = "down" | "up";
 export type CallBackQuery<T> = (data: T, index: number) => string;
+export type CallbackStyle = (context: CanvasRenderingContext2D) => void;
+export type clipboardStatus = "cut" | "copy" | "paste";

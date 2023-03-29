@@ -29,7 +29,7 @@ a {
 
 ::-webkit-scrollbar {
   background-color: transparent;
-  width: 6px;
+  width: 0px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -1189,4 +1189,9 @@ a {
 
 [aria-level="10"] {
   padding-left: 300px;
+}
+
+.dark {
+  background-color: #151515;
+  color: #fff;
 }/*# sourceMappingURL=main.css.map */
