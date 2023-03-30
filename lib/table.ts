@@ -309,10 +309,16 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
     );
   }
   async paste() {
+    const { SELECT_ELEMENTS } = this;
     var content = JSON.parse(await navigator.clipboard.readText());
     var array = (Array.isArray(content) ? content : [content]) as T[];
     var last = this.LAST_ELEMENT_SELECT;
-    last ? this.insert(last, 20, 2, ...array) : this.append(20, 2, ...array);
+    const length = SELECT_ELEMENTS.length;
+    if (length == array.length)
+      SELECT_ELEMENTS.forEach((ele, i) => this.insert(ele, 20, 2, array[i]));
+    else if (SELECT_ELEMENTS.length)
+      SELECT_ELEMENTS.forEach((ele) => this.insert(ele, 20, 2, ...array));
+    else this.append(20, 2, ...array);
   }
   async cut() {
     var data = this.DATA_SELECT;

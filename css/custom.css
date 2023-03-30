@@ -46,6 +46,7 @@ body {
   display: flex;
   justify-content: space-between;
   position: relative;
+  -webkit-user-drag: element;
 }
 [role=treeitem] > [role=row] {
   width: 100%;

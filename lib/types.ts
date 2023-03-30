@@ -175,9 +175,12 @@ export interface MethodTreeLinear<T> {
   append: T;
   insert: tree<T>;
 }
-export interface ClipboardEventTreeLinear<T> {
-  content: tree<T>[];
-  event: clipboardStatus;
+export interface HistoryEventTreeLinear<T> {
+  content: {
+    data: tree<T>[];
+    query: string;
+  }[];
+  event: actionsStatus;
 }
 /**
  *
@@ -190,9 +193,20 @@ export type listenerKeyboardShortcut = (
   type: "key" | "call"
 ) => void;
 export type Direction = "forword" | "backword";
-export type submitListener = (type: submitTypePress) => void;
+export type submitListener = (
+  type: submitTypePress,
+  element: HTMLElement
+) => void;
 export type submitTypePress = "call" | "keypress" | "click";
 export type SortedBy = "down" | "up";
 export type CallBackQuery<T> = (data: T, index: number) => string;
 export type CallbackStyle = (context: CanvasRenderingContext2D) => void;
-export type clipboardStatus = "cut" | "copy" | "paste";
+export type actionsStatus =
+  | "cut"
+  | "copy"
+  | "paste"
+  | "delete"
+  | "append"
+  | "insert"
+  | "after"
+  | "before";

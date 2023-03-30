@@ -1,3 +1,4 @@
+import { Delay } from "./delay.js";
 import { KeyboardShortcut } from "./keyboard-shortcuts.js";
 import { ListBox } from "./listbox.js";
 import {
@@ -6,7 +7,8 @@ import {
   tree,
   CallBackQuery,
   MethodTreeLinear,
-  ClipboardEventTreeLinear,
+  HistoryEventTreeLinear,
+  SortedBy,
 } from "./types.js";
 import { createElement, defaultObject, forEachAsync } from "./utils.js";
 
@@ -25,7 +27,7 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     if (!this.root.contains(document.activeElement)) return;
     (document.activeElement as HTMLElement)?.blur();
   });
-  #clipboardhistory: ClipboardEventTreeLinear<T>[] = [];
+  #history: HistoryEventTreeLinear<T>[] = [];
   #callbackQuery: CallBackQuery<T> = (d: T, i: number) => `${i}`;
   public separator: string = "/";
   constructor(
@@ -107,8 +109,8 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
       eles.forEach((ele) => (ele.style.display = "none"))
     );
   }
-  get clipboardHistory() {
-    return this.#clipboardhistory;
+  get history() {
+    return this.#history;
   }
   #getWritable() {
     return this.#writable;
@@ -134,12 +136,16 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   setCallbackQuery(callback: CallBackQuery<T>) {
     this.#callbackQuery = callback;
   }
-  createRow(feild: T, level: number) {
+  createRow(feild: T, level: number, closed: boolean = false) {
     feild = defaultObject(feild, this.defProp);
     const result = createElement("div", "", {
       role: "treeitem",
       "aria-level": level,
+      draggable: this.dragging,
     });
+
+    result.style.display = closed ? "none" : "";
+
     const span = createElement("span", "", { role: "open-close" });
     result.appendChild(span);
     span.onclick = () => this.#toggle(result);
@@ -148,6 +154,8 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     result.appendChild(row);
     this.#propertys.forEach((prop) => {
       var col = createElement("span", `${feild[prop]}`, { role: "col" });
+      col.ondblclick = () => this.#writable && (col.contentEditable = "true");
+      col.onblur = () => (col.contentEditable = "false");
       col.style.display = this.hiddenPropertys.includes(prop) ? "none" : "";
       row.appendChild(col);
     });
@@ -241,6 +249,7 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   #open(element: HTMLElement) {
     this.#innerTree(element).forEach((ele) => {
       ele.style.display = "";
+      this.setEffective(ele, true);
       if (ele.hasAttribute("inneropened")) {
         ele.removeAttribute("inneropened");
         this.#open(ele);
@@ -250,6 +259,7 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   #close(element: HTMLElement) {
     this.#innerTree(element).forEach((ele) => {
       ele.style.display = "none";
+      this.setEffective(ele, false);
       if (this.#isOpend(ele)) {
         ele.setAttribute("inneropened", "");
         this.#close(ele);
@@ -290,6 +300,7 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     this.#isClosed(element);
   }
   #toQuery(element: HTMLElement = this.#parentRoot): string {
+    if (element == this.#parentRoot) return "";
     var outer = this.#outerTree(element);
 
     var inner = outer ? this.#innerTree(outer) : [];
@@ -302,6 +313,8 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     );
   }
   #toElement(query: string) {
+    query = query.trim();
+    if (query == "") return this.#parentRoot;
     var array = query.split(this.separator);
 
     var element = this.#parentRoot;
@@ -343,13 +356,12 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   ) {
     var lvl = this.#getLevel(element) + 1;
     var inner = this.#innerTree(element);
+    var isClosed = this.#isClosed(element);
     element = inner.length ? inner[inner.length - 1] : element;
 
     await forEachAsync(
       data.reverse(),
-      (d) => {
-        element.after(this.createRow(d, lvl));
-      },
+      (d) => element.after(this.createRow(d, lvl, isClosed)),
       timeout,
       limit
     );
@@ -357,9 +369,12 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   #appendSync(element: HTMLElement, ...data: T[]) {
     var lvl = this.#getLevel(element) + 1;
     var inner = this.#innerTree(element);
+    var isClosed = !this.#isOpend(element);
     element = inner.length ? inner[inner.length - 1] : element;
 
-    data.reverse().forEach((d) => element.after(this.createRow(d, lvl)));
+    data
+      .reverse()
+      .forEach((d) => element.after(this.createRow(d, lvl, isClosed)));
   }
   async #after(
     element: HTMLElement,
@@ -369,16 +384,15 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
   ) {
     var lvl = this.#getLevel(element);
 
-    var inner = this.#innerTree(element);
+    var inner = this.#childs(element);
 
-    while (inner.length) {
-      element = inner[inner.length - 1];
-      inner = this.#innerTree(element);
-    }
+    var isClosed = element.style.display == "none";
+
+    element = inner.length ? inner[inner.length - 1] : element;
 
     await forEachAsync(
       data.reverse(),
-      (d) => element.after(this.createRow(d, lvl)),
+      (d) => element.after(this.createRow(d, lvl, isClosed)),
       timeout,
       limit
     );
@@ -388,12 +402,16 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
 
     var inner = this.#innerTree(element);
 
+    var isClosed = element.style.display == "none";
+
     while (inner.length) {
       element = inner[inner.length - 1];
       inner = this.#innerTree(element);
     }
 
-    data.reverse().forEach((d) => element.after(this.createRow(d, lvl)));
+    data
+      .reverse()
+      .forEach((d) => element.after(this.createRow(d, lvl, isClosed)));
   }
   async #before(
     element: HTMLElement,
@@ -402,24 +420,25 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     ...data: T[]
   ) {
     var lvl = this.#getLevel(element);
-
+    var isClosed = element.style.display == "none";
     await forEachAsync(
       data,
-      (d) => element.before(this.createRow(d, lvl)),
+      (d) => element.before(this.createRow(d, lvl, isClosed)),
       timeout,
       limit
     );
   }
   #beforeSync(element: HTMLElement, ...data: T[]) {
     var lvl = this.#getLevel(element);
-
-    data.forEach((d) => element.before(this.createRow(d, lvl)));
+    var isClosed = element.style.display == "none";
+    data.forEach((d) => element.before(this.createRow(d, lvl, isClosed)));
   }
   // -----------------------------------------------------------------------------------
   #insertSync(element: HTMLElement, ...tree: tree<T>[]) {
     var level = this.#getLevel(element) + 1;
+    var isClosed = !this.#isOpend(element);
     tree.forEach(({ body, innerTree }) => {
-      var ele = this.createRow(body, level);
+      var ele = this.createRow(body, level, isClosed);
 
       var inner = this.#innerTree(element);
       var mainElement = inner.length ? inner[inner.length - 1] : element;
@@ -438,10 +457,12 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     ...tree: tree<T>[]
   ) {
     var level = this.#getLevel(element) + 1;
+    var isClosed = !this.#isOpend(element);
+
     await forEachAsync(
       tree,
       async ({ body, innerTree }) => {
-        var ele = this.createRow(body, level);
+        var ele = this.createRow(body, level, isClosed);
 
         var childs = this.#childs(element);
         var mainElement = childs.length ? childs[childs.length - 1] : element;
@@ -466,13 +487,13 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     return result;
   }
   async #methode<M extends keyof MethodTreeLinear<T>>(
-    name: M,
+    event: M,
     element: HTMLElement,
     timeout: number,
     limit: number,
     ...data: MethodTreeLinear<T>[M][]
   ) {
-    switch (name) {
+    switch (event) {
       case "append": {
         await this.#append(
           element,
@@ -520,9 +541,21 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     limit: number,
     ...data: MethodTreeLinear<T>[M][]
   ) {
+    var element = direction;
     direction = this.convertTo(direction, "element");
-    direction &&
-      (await this.#methode(method, direction, timeout, limit, ...data));
+    if (direction) {
+      await this.#methode(method, direction, timeout, limit, ...data);
+      this.history.push({
+        event: method,
+        content: [
+          {
+            data: this.json(direction),
+            query:
+              typeof element == "string" ? element : this.#toQuery(element),
+          },
+        ],
+      });
+    }
   }
   #methodeSync<M extends keyof MethodTreeLinear<T>>(
     name: M,
@@ -555,24 +588,165 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     direction: HTMLElement | string = this.#parentRoot,
     ...data: MethodTreeLinear<T>[M][]
   ) {
+    var element = direction;
     direction = this.convertTo(direction, "element");
-    direction && this.#methodeSync(method, direction, ...data);
+
+    if (direction) {
+      this.#methodeSync(method, direction, ...data);
+      this.history.push({
+        event: method,
+        content: [
+          {
+            data: this.json(direction),
+            query:
+              typeof element == "string" ? element : this.#toQuery(element),
+          },
+        ],
+      });
+    }
   }
-  async delete(direction: HTMLElement | string) {
-    var element = this.convertTo(direction, "element");
-    element && (await this.#delete(element));
+  deleteSync(...directions: (HTMLElement | string)[]) {
+    var content: HistoryEventTreeLinear<T>["content"] = [];
+    directions.forEach((direction) => {
+      var element = this.convertTo(direction, "element");
+      if (element) {
+        content.push({
+          data: this.json(element),
+          query: this.#toQuery(element),
+        });
+        this.#deleteSync(element);
+      }
+    });
+    this.#history.push({ content, event: "delete" });
+  }
+  #deleteSync(element: HTMLElement) {
+    this.#innerTree(element).forEach((ele) => this.#deleteSync(ele));
+    element.remove();
+  }
+  async delete(...directions: (HTMLElement | string)[]) {
+    var content: HistoryEventTreeLinear<T>["content"] = [];
+    for (let i = 0; i < directions.length; i++) {
+      var element = this.convertTo(directions[i], "element");
+      if (element) {
+        content.push({
+          data: this.json(element),
+          query: this.#toQuery(element),
+        });
+        await this.#delete(element);
+      }
+    }
+    this.#history.push({ content, event: "delete" });
   }
   async #delete(element: HTMLElement) {
-    var result: HTMLElement[] = [];
     await forEachAsync(
       this.#innerTree(element),
-      async (ele) => result.push(...(await this.#delete(ele))),
+      async (ele) => await this.#delete(ele),
       4,
       1
     );
     element.remove();
-    result.push(element);
-    return result;
+  }
+  #sortSync(
+    sortBy: keyof T,
+    direction: SortedBy,
+    element: HTMLElement = this.#parentRoot,
+    deep: boolean = true
+  ) {
+    var tree = this.read(element).innerTree;
+
+    for (let i = 0; i < tree.length; i++) {
+      var { body } = tree[i];
+      var { row } = body;
+
+      deep && this.#sortSync(sortBy, direction, row);
+
+      var j = i - 1;
+
+      var prec = tree[j];
+
+      while (
+        prec &&
+        (direction == "down"
+          ? prec.body[sortBy] < body[sortBy]
+          : prec.body[sortBy] > body[sortBy])
+      ) {
+        j--;
+        prec = tree[j];
+      }
+
+      var childs = this.#childs(row);
+
+      if (prec) prec.body.row.before(...childs);
+      else element.after(...childs);
+    }
+  }
+  sortSync(
+    sortBy: keyof T,
+    direction: SortedBy,
+    element: HTMLElement,
+    deep: boolean
+  ) {
+    this.#sortSync(sortBy, direction, element, deep);
+  }
+  async #sort(
+    key: keyof T,
+    direction: SortedBy,
+    element: HTMLElement,
+    deep: boolean = true,
+    timeout: number,
+    limit: number
+  ) {
+    var dl = new Delay(timeout);
+
+    var tree = this.read(element).innerTree;
+
+    function childs(tree: tree<T & Row>) {
+      var result = [tree.body.row];
+      tree.innerTree.forEach((tree) => result.push(...childs(tree)));
+      return result;
+    }
+
+    for (let i = 0; i < tree.length; i++) {
+      if (!(i % limit)) await dl.on();
+      var o = tree[i];
+      var { body, innerTree } = o;
+      var { row } = body;
+
+      var j = i - 1;
+
+      var prec = tree[j];
+
+      while (
+        prec &&
+        (direction == "down"
+          ? prec.body[key] < body[key]
+          : prec.body[key] > body[key])
+      ) {
+        j--;
+        prec = tree[j];
+      }
+
+      var c = childs(o);
+
+      if (prec) prec.body.row.before(...c);
+      else element.after(...c);
+
+      deep && (await this.#sort(key, direction, row, true, timeout, limit));
+
+      tree = this.read(element).innerTree;
+    }
+  }
+  async sort(
+    key: keyof T,
+    direction: SortedBy,
+    element: HTMLElement | string,
+    deep: boolean = true,
+    timeout: number,
+    limit: number
+  ) {
+    element = this.convertTo(element, "element");
+    element &&
+      (await this.#sort(key, direction, element, deep, timeout, limit));
   }
   json(...elements: HTMLElement[]) {
     var fn = (treeContent: tree<T & Row>): tree<T> => {
@@ -586,25 +760,63 @@ export class TreeLinear<U extends HTMLElement, T> extends ListBox<U> {
     return elements.map((element) => fn(this.read(element)));
   }
   async copy() {
-    var json = this.json(...this.SELECT_ELEMENTS);
+    var selectionElement = this.SELECT_ELEMENTS;
+    var json = this.json(...selectionElement);
     await navigator.clipboard.writeText(JSON.stringify(json, undefined, 1));
-    this.#clipboardhistory.push({ content: json, event: "copy" });
+    var content: HistoryEventTreeLinear<T>["content"] = json.map(
+      (info, index) => {
+        return {
+          data: [info],
+          query: this.#toQuery(selectionElement[index]),
+        };
+      }
+    );
+    this.#history.push({
+      content,
+      event: "copy",
+    });
   }
   async paste() {
-    var content = JSON.parse(await navigator.clipboard.readText());
-    var array = (Array.isArray(content) ? content : [content]) as tree<T>[];
-    var last = this.LAST_ELEMENT_SELECT;
-    last
-      ? this.#insert(last, 130, 2, ...array)
-      : this.#insert(this.#parentRoot, 130, 2, ...array);
-    this.#clipboardhistory.push({ content: array, event: "paste" });
+    var json = JSON.parse(await navigator.clipboard.readText());
+    var array = (Array.isArray(json) ? json : [json]) as tree<T>[];
+    var { SELECT_ELEMENTS } = this;
+    var content: HistoryEventTreeLinear<T>["content"] = [];
+    if (SELECT_ELEMENTS.length == array.length) {
+      content = SELECT_ELEMENTS.map((ele, index) => {
+        this.#insert(ele, 130, 2, array[index]);
+        return {
+          data: [array[index]],
+          query: this.#toQuery(ele),
+        };
+      });
+    } else if (SELECT_ELEMENTS.length) {
+      content = SELECT_ELEMENTS.map((ele) => {
+        this.#insert(ele, 130, 2, ...array);
+        return {
+          data: array,
+          query: this.#toQuery(ele),
+        };
+      });
+    } else {
+      this.#insert(this.#parentRoot, 130, 2, ...array);
+      content = [{ data: array, query: "" }];
+    }
+    if (content.length) this.#history.push({ content, event: "paste" });
   }
   async cut() {
     var elements = this.SELECT_ELEMENTS;
-    var content = this.json(...elements);
-    await navigator.clipboard.writeText(JSON.stringify(content, undefined, 1));
+    var json = this.json(...elements);
+    await navigator.clipboard.writeText(JSON.stringify(json, undefined, 1));
     await forEachAsync(elements, (ele) => this.#delete(ele), 130, 2);
-    this.#clipboardhistory.push({ content, event: "cut" });
+
+    var content: HistoryEventTreeLinear<T>["content"] = json.map((data, i) => {
+      return {
+        data: [data],
+        query: this.#toQuery(elements[i]),
+      };
+    });
+
+    this.#history.push({ content, event: "cut" });
   }
   columns(propertys: (keyof T)[]) {
     var indexes = propertys.map((prop) => this.#propertys.indexOf(prop));

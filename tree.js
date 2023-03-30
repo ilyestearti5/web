@@ -4,7 +4,7 @@ var tr = TreeLinear.create("Explorer", { name: "New Directory", type: "folder" }
 
 tr.hiddenPropertys = ["type"];
 
-document.body.appendChild(tr.root);
+document.querySelector(".tree").appendChild(tr.root);
 
 tr.setCallbackQuery((d) => `${d.name}`);
 
@@ -97,7 +97,3 @@ tr.methode("insert", undefined, 20, 1, {
     ]
 }).then(() => {
 })
-
-tr.onsubmit((type) => console.log(`${type}`));
-
-window.tree = tr;

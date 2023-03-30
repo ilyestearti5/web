@@ -15,52 +15,7 @@ export class ListBox<T extends HTMLElement> {
   #dragging: boolean = false;
   static #all: ListBox<HTMLElement>[] = [];
 
-  #shortcutsConfig: shortcutConfigurationsList = {
-    selection: {
-      forword: KeyboardShortcut.create(
-        `${this.title} - forword selection`,
-        `Shift${KeyboardShortcut.separatorShortcuts}ArrowDown`,
-        [this.root]
-      ).ondown(() => {
-        this.forwordSelection(1);
-      }),
-      backword: KeyboardShortcut.create(
-        `${this.title} - backword selection`,
-        `Shift${KeyboardShortcut.separatorShortcuts}ArrowUp`,
-        [this.root]
-      ).ondown(() => {
-        this.backwordSelection(1);
-      }),
-    },
-    move: {
-      forword: KeyboardShortcut.create(`${this.title} - forword`, `ArrowDown`, [
-        this.root,
-      ]).ondown((combinition, event) => {
-        event && event.preventDefault();
-        this.forword(1);
-      }),
-      backword: KeyboardShortcut.create(`${this.title} - backword`, `ArrowUp`, [
-        this.root,
-      ]).ondown((combinition, event) => {
-        event && event.preventDefault();
-        this.backword(1);
-      }),
-    },
-    status: {
-      submit: KeyboardShortcut.create(`${this.title} - submit`, `Enter`, [
-        this.root,
-      ]).ondown(() => {
-        this.#submit("keypress");
-      }),
-      cancel: KeyboardShortcut.create(`${this.title} - cancel`, "Escape", [
-        this.root,
-      ]).ondown(() => this.select()),
-    },
-    // has value in table & tree constructor
-    clipboard: null,
-    // has value in tree constructor
-    inner: null,
-  };
+  #shortcutsConfig: shortcutConfigurationsList;
 
   protected rowString = "row";
 
@@ -88,8 +43,11 @@ export class ListBox<T extends HTMLElement> {
   };
 
   #click_function = (e: MouseEvent) => {
-    if (e.altKey && e.target == this.root) return;
-    this.#submit("click");
+    if (e.altKey) return;
+    var focusElement = this.ITEMS.find((ele) =>
+      ele.contains(e.target as HTMLElement)
+    );
+    focusElement && this.#submit("click", focusElement);
   };
 
   #drag_function = (e: DragEvent) => {
@@ -109,15 +67,66 @@ export class ListBox<T extends HTMLElement> {
 
   constructor(public root: T, title: string = `${root.ariaLabel}`) {
     if (ListBox.#all.find(({ title: tlt }) => tlt == title))
-      throw Error("Cannot Be Used Same Label in Tow Difrent Listbox.");
+      throw Error("cannot be used same label in tow difrent listbox.");
+
+    this.#title = title;
+
+    this.root.ariaLabel = title;
 
     this.setClick(true);
 
     this.root.setAttribute("role", "listbox");
 
-    this.root.ariaLabel = title;
-
-    this.#title = title;
+    this.#shortcutsConfig = {
+      selection: {
+        forword: KeyboardShortcut.create(
+          `${this.#title} - forword selection`,
+          `Shift${KeyboardShortcut.separatorShortcuts}ArrowDown`,
+          [this.root]
+        ).ondown(() => {
+          this.forwordSelection(1);
+        }),
+        backword: KeyboardShortcut.create(
+          `${this.#title} - backword selection`,
+          `Shift${KeyboardShortcut.separatorShortcuts}ArrowUp`,
+          [this.root]
+        ).ondown(() => {
+          this.backwordSelection(1);
+        }),
+      },
+      move: {
+        forword: KeyboardShortcut.create(
+          `${this.#title} - forword`,
+          `ArrowDown`,
+          [this.root]
+        ).ondown((combinition, event) => {
+          event && event.preventDefault();
+          this.forword(1);
+        }),
+        backword: KeyboardShortcut.create(
+          `${this.#title} - backword`,
+          `ArrowUp`,
+          [this.root]
+        ).ondown((combinition, event) => {
+          event && event.preventDefault();
+          this.backword(1);
+        }),
+      },
+      status: {
+        submit: KeyboardShortcut.create(`${this.#title} - submit`, `Enter`, [
+          this.root,
+        ]).ondown(() => {
+          this.#submit("keypress");
+        }),
+        cancel: KeyboardShortcut.create(`${this.#title} - cancel`, "Escape", [
+          this.root,
+        ]).ondown(() => this.select()),
+      },
+      // has value in table & tree constructor
+      clipboard: null,
+      // has value in tree constructor
+      inner: null,
+    };
   }
 
   get dragging() {
@@ -295,12 +304,12 @@ export class ListBox<T extends HTMLElement> {
       count--;
     }
     while (ele && count) {
-      this.getEffective(ele) && count--;
       ele = ele.nextElementSibling
         ? (ele.nextElementSibling as HTMLElement)
         : this.#configurations.redirect
         ? MIN_ELEMENT_EFFECTIVE
         : null;
+      ele && this.getEffective(ele) && count--;
     }
     if (ele) {
       this.select(ele);
@@ -321,12 +330,12 @@ export class ListBox<T extends HTMLElement> {
       count--;
     }
     while (ele && count) {
-      this.getEffective(ele) && count--;
       ele = ele.previousElementSibling
         ? (ele.previousElementSibling as HTMLElement)
         : this.#configurations.redirect
         ? MAX_ELEMENT_EFFCTIVE
         : null;
+      ele && this.getEffective(ele) && count--;
     }
     if (ele) {
       this.select(ele);
@@ -452,9 +461,9 @@ export class ListBox<T extends HTMLElement> {
   }
   // ----------------------------------------------------------------------
 
-  #submit(type: submitTypePress = "click") {
+  #submit(type: submitTypePress = "click", element = this.ELEMENT_DIRECTION) {
     if (this.SELECT_ELEMENTS.length)
-      this.#on_submit_fn.forEach((fn) => fn(type));
+      this.#on_submit_fn.forEach((fn) => fn(type, element!));
   }
   submit() {
     this.#submit("call");

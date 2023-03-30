@@ -62,12 +62,16 @@ export function defaultObject<T>(o: T, def: T): T {
 }
 /**
  * get range from `(`min `/` steps`)` to `(`max `/` steps`)` and return at `Array`
- * @param max maximum number 
- * @param min maximum number 
+ * @param max maximum number
+ * @param min maximum number
  * @param steps steps of how to get numbers
  * @returns { Array }
  */
-export function range(max: number, min: number = 0, steps: number = 1): Array<number> {
+export function range(
+  max: number,
+  min: number = 0,
+  steps: number = 1
+): Array<number> {
   var array: number[] = [];
   for (let i = min; i < max; i += steps) array.push(i);
   return array;
@@ -166,3 +170,12 @@ export var isLooked = (element: HTMLElement | null): boolean => {
 
   return pT <= eT && eB <= pB && pL <= eL && eR <= pR;
 };
+/**
+ * @param array 
+ * @param callback 
+ * @returns 
+ */
+export var countOf = <T>(
+  array: T[],
+  callback: (value: T, index: number) => boolean
+) => array.filter(callback).length;
