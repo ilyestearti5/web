@@ -2,29 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      href="./main.scss"
+    />
     <title>Desktop App</title>
-    <link rel="stylesheet" href="./css/main.css" />
-    <link rel="stylesheet" href="./css/custom.css" />
-    <style>
-      canvas {
-        outline: 1px solid #ffffff81;
-        outline-offset: -1px;
-      }
-      h1 {
-        padding: 10px;
-        font-weight: lighter;
-      }
-    </style>
   </head>
   <body class="dark">
-    <h1>Graphe</h1>
-    <canvas></canvas>
-    <h1>Table</h1>
-    <div class="table"></div>
-    <h1>Tree</h1>
-    <div class="tree"></div>
-    <script src="./graphe.js" defer type="module"></script>
-    <script src="./table.js" defer type="module"></script>
-    <script src="./tree.js" defer type="module"></script>
+    <div class="childs">
+      <h1>Graphe</h1>
+      <canvas></canvas>
+    </div>
+    <div class="childs">
+      <h1>Table</h1>
+      <div class="table"></div>
+    </div>
+    <div class="childs">
+      <h1>Tree</h1>
+      <div class="tree"></div>
+    </div>
+    <script
+      src="./graphe.js"
+      defer
+      type="module"
+    ></script>
+    <script
+      src="./table.js"
+      defer
+      type="module"
+    ></script>
+    <script
+      src="./tree.js"
+      defer
+      type="module"
+    ></script>
+    <script
+      src="./notification.js"
+      defer
+      type="module"
+    ></script>
   </body>
 </html>

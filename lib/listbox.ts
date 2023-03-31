@@ -14,22 +14,18 @@ export class ListBox<T extends HTMLElement> {
   #selection_direction: Direction = "forword";
   #dragging: boolean = false;
   static #all: ListBox<HTMLElement>[] = [];
-
   #shortcutsConfig: shortcutConfigurationsList;
-
   protected rowString = "row";
-
   #configurations: ConfigListBox = {
     movable: true,
     scrolling: true,
     selection: true,
     redirect: true,
   };
-
   #on_submit_fn: submitListener[] = [];
   #on_change_fn: Function[] = [];
-
   #pointer_down_function = (e: MouseEvent) => {
+    console.log("Done");
     var effective = this.EFFECTIVE_ELEMENTS;
 
     var mainElement = effective.find((element) =>
@@ -38,10 +34,11 @@ export class ListBox<T extends HTMLElement> {
 
     if (!mainElement) return;
 
-    if (e.altKey) this.setSelect(mainElement, !this.getSelect(mainElement));
+    if (e.altKey)
+      this.#configurations.scrolling &&
+        this.setSelect(mainElement, !this.getSelect(mainElement));
     else this.select(mainElement);
   };
-
   #click_function = (e: MouseEvent) => {
     if (e.altKey) return;
     var focusElement = this.ITEMS.find((ele) =>
@@ -49,7 +46,6 @@ export class ListBox<T extends HTMLElement> {
     );
     focusElement && this.#submit("click", focusElement);
   };
-
   #drag_function = (e: DragEvent) => {
     var { x, y, target } = e;
     var element = document.elementFromPoint(x, y);
@@ -64,7 +60,6 @@ export class ListBox<T extends HTMLElement> {
 
     row.after(target as HTMLElement);
   };
-
   constructor(public root: T, title: string = `${root.ariaLabel}`) {
     if (ListBox.#all.find(({ title: tlt }) => tlt == title))
       throw Error("cannot be used same label in tow difrent listbox.");
@@ -128,7 +123,6 @@ export class ListBox<T extends HTMLElement> {
       inner: null,
     };
   }
-
   get dragging() {
     return this.#dragging;
   }
@@ -140,11 +134,9 @@ export class ListBox<T extends HTMLElement> {
 
     this.ITEMS.forEach((ele) => (ele.draggable = v));
   }
-
   get shortcuts() {
     return this.#shortcutsConfig;
   }
-
   get title() {
     return this.#title;
   }
@@ -187,90 +179,41 @@ export class ListBox<T extends HTMLElement> {
   get mouse() {
     return this.getMouse();
   }
-
   set click(v) {
     this.setClick(v);
   }
   set mouse(v) {
     this.setMouse(v);
   }
-
   #setConfigurations(config: ConfigListBox) {
     this.#configurations = defaultObject(config, this.#configurations);
   }
-  setConfigurations(config: ConfigListBox) {
-    this.#setConfigurations(config);
-  }
-
   #getConfigurations(): ConfigListBox {
     return this.#configurations;
   }
-  getConfigurations() {
-    return this.#getConfigurations();
-  }
-
   #setClick(flag: boolean) {
     this.root.onclick = flag ? this.#click_function : null;
     this.root.onpointerdown = flag ? this.#pointer_down_function : null;
   }
-  setClick(flag: boolean = true) {
-    this.#setClick(flag);
-  }
-
   #getClick() {
     return !!this.root.onclick;
   }
-  getClick() {
-    return this.#getClick();
-  }
-
   #setMouse(flag: boolean) {
-    this.root.onmouseover = flag ? this.#click_function : null;
+    this.root.onmouseover = flag ? this.#pointer_down_function : null;
+    this.root.onmouseleave = flag ? () => this.select() : null;
   }
-  setMouse(flag: boolean) {
-    this.#setMouse(flag);
-  }
-
   #getMouse() {
     return Boolean(this.root.onmouseover);
   }
-  getMouse() {
-    return this.#getMouse();
-  }
-
-  addTarget(...elements: HTMLElement[]) {
-    this.#shortcutsConfig.move.forword.targets?.push(...elements);
-    this.#shortcutsConfig.move.backword.targets?.push(...elements);
-    this.#shortcutsConfig.selection.forword.targets?.push(...elements);
-    this.#shortcutsConfig.selection.backword.targets?.push(...elements);
-    this.#shortcutsConfig.status.cancel.targets?.push(...elements);
-    this.#shortcutsConfig.status.submit.targets?.push(...elements);
-  }
-
-  getEffective(element: HTMLElement) {
-    return this.#getEffective(element);
-  }
   #getEffective(element: HTMLElement) {
     return element.ariaDisabled !== "true";
-  }
-
-  setEffective(element: HTMLElement, flag: boolean = true) {
-    this.#setEffective(element, flag);
   }
   #setEffective(element: HTMLElement, flag: boolean) {
     element.ariaDisabled = `${!flag}`;
     if (!flag) element.ariaSelected = "false";
   }
-
-  getSelect(element: HTMLElement) {
-    return this.#getSelect(element);
-  }
   #getSelect(element: HTMLElement) {
     return this.getEffective(element) && element.ariaSelected == "true";
-  }
-
-  setSelect(element: HTMLElement, flag: boolean = true): boolean {
-    return this.#setSelect(element, flag);
   }
   #setSelect(element: HTMLElement, flag: boolean): boolean {
     var b = this.getEffective(element);
@@ -280,21 +223,12 @@ export class ListBox<T extends HTMLElement> {
     element.ariaSelected = `${flag}`;
     return true;
   }
-
   #effective(...elements: HTMLElement[]) {
     this.ITEMS.forEach((ele) => this.setEffective(ele, elements.includes(ele)));
-  }
-  effective(...elements: HTMLElement[]) {
-    this.#effective(...elements);
-  }
-
-  select(...elements: HTMLElement[]) {
-    this.#select(...elements);
   }
   #select(...elements: HTMLElement[]) {
     this.ITEMS.forEach((ele) => this.setSelect(ele, elements.includes(ele)));
   }
-
   #forword(count: number) {
     if (!this.#configurations.movable) return;
     var { LAST_ELEMENT_SELECT, MIN_ELEMENT_EFFECTIVE } = this;
@@ -317,10 +251,6 @@ export class ListBox<T extends HTMLElement> {
         scrollToElement(ele, -1);
     }
   }
-  forword(count: number = 1) {
-    this.#forword(count);
-  }
-
   #backword(count: number) {
     if (!this.#configurations.movable) return;
     var { FIRST_ELEMENT_SELECT, MAX_ELEMENT_EFFCTIVE } = this;
@@ -343,14 +273,6 @@ export class ListBox<T extends HTMLElement> {
         scrollToElement(ele, 0);
     }
   }
-  backword(count: number = 1) {
-    this.#backword(count);
-  }
-
-  go(dir: Direction = "forword", count: number = 1) {
-    this[dir](count);
-  }
-
   #forwordSelection(count: number) {
     if (!count) {
       this.scroll("forword");
@@ -380,10 +302,6 @@ export class ListBox<T extends HTMLElement> {
 
     this.#forwordSelection(count - 1);
   }
-  forwordSelection(count: number = 1) {
-    this.#forwordSelection(count);
-  }
-
   #backwordSelection(count: number) {
     if (!count) {
       this.scroll("backword");
@@ -413,45 +331,19 @@ export class ListBox<T extends HTMLElement> {
 
     this.#backwordSelection(count - 1);
   }
-  backwordSelection(count: number = 1) {
-    this.#backwordSelection(count);
-  }
-
-  selection(dir: Direction = "forword", count: number = 1) {
-    dir == "forword"
-      ? this.forwordSelection(count)
-      : this.backwordSelection(count);
-  }
-  // evenets
-  // ----------------------------------------------------------------------
   #onsubmit(listener: submitListener) {
     typeof listener == "function" && this.#on_submit_fn.push(listener);
     return this;
   }
-  onsubmit(listener: submitListener) {
-    return this.#onsubmit(listener);
-  }
-
   #offsubmit(listener: submitListener) {
     var index = this.#on_submit_fn.indexOf(listener);
     if (index < 0) return false;
     this.#on_submit_fn.splice(index, 1);
     return true;
   }
-  offsubmit(listener: submitListener) {
-    return this.#offsubmit(listener);
-  }
-
   #onchange(listener: Function) {
     typeof listener == "function" && this.#on_change_fn.push(listener);
     return this;
-  }
-  onchange(listener: Function) {
-    return this.#onchange(listener);
-  }
-
-  offchange(listener: Function) {
-    return this.#offchange(listener);
   }
   #offchange(listener: Function) {
     var index = this.#on_change_fn.indexOf(listener);
@@ -459,25 +351,132 @@ export class ListBox<T extends HTMLElement> {
     this.#on_change_fn.splice(index, 1);
     return true;
   }
-  // ----------------------------------------------------------------------
-
   #submit(type: submitTypePress = "click", element = this.ELEMENT_DIRECTION) {
     if (this.SELECT_ELEMENTS.length)
       this.#on_submit_fn.forEach((fn) => fn(type, element!));
-  }
-  submit() {
-    this.#submit("call");
-  }
-
-  scroll(dir: Direction) {
-    this.#scroll(dir == "forword");
   }
   #scroll(flag: boolean) {
     var { ELEMENT_DIRECTION: element } = this;
     if (element && this.#configurations.scrolling && !isLooked(element))
       scrollToElement(element, flag ? -1 : 0);
   }
-
+  // ready methods
+  // ---------------------------------------------------------------------
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  // ---------------------------------------------------------------------
+  setConfigurations(config: ConfigListBox) {
+    this.#setConfigurations(config);
+  }
+  getConfigurations() {
+    return this.#getConfigurations();
+  }
+  setClick(flag: boolean = true) {
+    this.#setClick(flag);
+  }
+  getClick() {
+    return this.#getClick();
+  }
+  setMouse(flag: boolean) {
+    this.#setMouse(flag);
+  }
+  getMouse() {
+    return this.#getMouse();
+  }
+  addTarget(...elements: HTMLElement[]) {
+    this.#shortcutsConfig.move.forword.targets?.push(...elements);
+    this.#shortcutsConfig.move.backword.targets?.push(...elements);
+    this.#shortcutsConfig.selection.forword.targets?.push(...elements);
+    this.#shortcutsConfig.selection.backword.targets?.push(...elements);
+    this.#shortcutsConfig.status.cancel.targets?.push(...elements);
+    this.#shortcutsConfig.status.submit.targets?.push(...elements);
+  }
+  removeTarget(element: HTMLElement) {
+    this.#shortcutsConfig.move.forword.targets?.splice(
+      this.#shortcutsConfig.move.forword.targets?.indexOf(element),
+      1
+    );
+    this.#shortcutsConfig.move.backword.targets?.splice(
+      this.#shortcutsConfig.move.backword.targets?.indexOf(element),
+      1
+    );
+    this.#shortcutsConfig.selection.forword.targets?.splice(
+      this.#shortcutsConfig.selection.forword.targets?.indexOf(element),
+      1
+    );
+    this.#shortcutsConfig.selection.backword.targets?.splice(
+      this.#shortcutsConfig.selection.backword.targets?.indexOf(element),
+      1
+    );
+    this.#shortcutsConfig.status.cancel.targets?.splice(
+      this.#shortcutsConfig.status.cancel.targets?.indexOf(element),
+      1
+    );
+    this.#shortcutsConfig.status.submit.targets?.splice(
+      this.#shortcutsConfig.status.submit.targets?.indexOf(element),
+      1
+    );
+  }
+  getEffective(element: HTMLElement) {
+    return this.#getEffective(element);
+  }
+  setEffective(element: HTMLElement, flag: boolean = true) {
+    this.#setEffective(element, flag);
+  }
+  getSelect(element: HTMLElement) {
+    return this.#getSelect(element);
+  }
+  setSelect(element: HTMLElement, flag: boolean = true): boolean {
+    return this.#setSelect(element, flag);
+  }
+  effective(...elements: HTMLElement[]) {
+    this.#effective(...elements);
+  }
+  select(...elements: HTMLElement[]) {
+    this.#select(...elements);
+  }
+  forword(count: number = 1) {
+    this.#forword(count);
+  }
+  backword(count: number = 1) {
+    this.#backword(count);
+  }
+  go(dir: Direction = "forword", count: number = 1) {
+    this[dir](count);
+  }
+  forwordSelection(count: number = 1) {
+    this.#forwordSelection(count);
+  }
+  backwordSelection(count: number = 1) {
+    this.#backwordSelection(count);
+  }
+  selection(dir: Direction = "forword", count: number = 1) {
+    dir == "forword"
+      ? this.forwordSelection(count)
+      : this.backwordSelection(count);
+  }
+  onsubmit(listener: submitListener) {
+    return this.#onsubmit(listener);
+  }
+  offsubmit(listener: submitListener) {
+    return this.#offsubmit(listener);
+  }
+  onchange(listener: Function) {
+    return this.#onchange(listener);
+  }
+  offchange(listener: Function) {
+    return this.#offchange(listener);
+  }
+  submit() {
+    this.#submit("call");
+  }
+  scroll(dir: Direction) {
+    this.#scroll(dir == "forword");
+  }
   static get all() {
     return this.#all;
   }

@@ -1,6 +1,6 @@
 import { ListBox } from "./listbox.js";
 import { createElement, defaultObject, forEachAsync } from "./utils.js";
-import { Row, SortedBy, shortcutConfigurationsList } from "./types.js";
+import { MethodeTable, Row, SortedBy } from "./types.js";
 import { Delay } from "./delay.js";
 import { KeyboardShortcut } from "./keyboard-shortcuts.js";
 
@@ -50,7 +50,6 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
       }),
     };
   }
-
   get propertys(): (keyof T)[] {
     return this.#propertys;
   }
@@ -81,21 +80,6 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
   #setWritable(flag: boolean) {
     this.#writable = Boolean(flag);
   }
-  getWritable() {
-    return this.#getWritable();
-  }
-  setWritable(flag: boolean = true) {
-    this.#setWritable(flag);
-  }
-  addTarget(...elements: HTMLElement[]) {
-    this.shortcuts.move.forword.targets?.push(...elements);
-    this.shortcuts.move.backword.targets?.push(...elements);
-    this.shortcuts.selection.forword.targets?.push(...elements);
-    this.shortcuts.selection.backword.targets?.push(...elements);
-    this.shortcuts.clipboard?.copy.targets?.push(...elements);
-    this.shortcuts.clipboard?.paste.targets?.push(...elements);
-    this.shortcuts.clipboard?.cut.targets?.push(...elements);
-  }
   #createRow(config: T) {
     config = defaultObject(config, this.defProp);
     const result = createElement("div", "", {
@@ -121,6 +105,183 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
     });
 
     return result;
+  }
+  #appendSync(...info: T[]) {
+    info.forEach((data) => {
+      var row = this.#createRow(data);
+      this.root.appendChild(row);
+    });
+  }
+  async #append(timeout: number, limit: number, ...info: T[]) {
+    await forEachAsync(
+      info,
+      (data) => {
+        var row = this.#createRow(data);
+        this.root.appendChild(row);
+      },
+      timeout,
+      limit
+    );
+  }
+  #prependSync(...info: T[]) {
+    info.reverse().forEach((data) => {
+      var row = this.#createRow(data);
+      this.root.prepend(row);
+    });
+  }
+  async #prepend(timeout: number, limit: number, ...info: T[]) {
+    await forEachAsync(
+      info.reverse(),
+      (data) => {
+        var row = this.#createRow(data);
+        this.root.prepend(row);
+      },
+      timeout,
+      limit
+    );
+  }
+  #insertSync(element: HTMLElement, ...info: T[]) {
+    info.reverse().forEach((data) => {
+      var row = this.#createRow(data);
+      element.after(row);
+    });
+  }
+  async #insert(
+    element: HTMLElement,
+    timeout: number,
+    limit: number,
+    ...info: T[]
+  ) {
+    forEachAsync(
+      info.reverse(),
+      (data) => {
+        var row = this.#createRow(data);
+        element.after(row);
+      },
+      timeout,
+      limit
+    );
+  }
+  #methodeSync<R extends keyof MethodeTable<T>>(
+    event: R,
+    config: MethodeTable<T>[R]
+  ) {
+    var { data } = config;
+    switch (event) {
+      case "insert": {
+        var { element } = config as MethodeTable<T>["insert"];
+        this.#insertSync(element, ...data);
+      }
+      case "append": {
+        this.#appendSync(...data);
+        break;
+      }
+      case "prepend": {
+        this.#prependSync(...data);
+        break;
+      }
+    }
+  }
+  async #methode<R extends keyof MethodeTable<T>>(
+    timeout: number,
+    limit: number,
+    event: R,
+    config: MethodeTable<T>[R]
+  ) {
+    var { data } = config;
+    switch (event) {
+      case "insert":
+      case "append": {
+        await this.#append(timeout, limit, ...data);
+        break;
+      }
+      case "prepend": {
+        await this.#prepend(timeout, limit, ...data);
+        break;
+      }
+      case "insert": {
+        var { element } = config as MethodeTable<T>["insert"];
+        await this.#insert(element, timeout, limit, ...data);
+      }
+    }
+  }
+  #deleteSync(callback: (data: T & Row, index: number) => boolean) {
+    return this.DATA.filter(callback).map((data) => {
+      data.row.remove();
+      return data;
+    });
+  }
+  async #delete(
+    timeout: number,
+    limit: number,
+    callback: (data: T & Row, index: number) => boolean
+  ) {
+    var array: (T & Row)[] = [];
+    await forEachAsync(
+      this.ITEMS,
+      (element, index) => {
+        var data = this.readRow(element);
+        if (callback(data, index)) {
+          data.row.remove();
+          array.push(data);
+        }
+      },
+      timeout,
+      limit
+    );
+    return array;
+  }
+  #filterSync(callback: (data: T & Row, index: number) => boolean) {
+    return this.DATA.filter((data, index) => {
+      var a = callback(data, index);
+      data.row.style.display = a ? "" : "none";
+      this.setEffective(data.row, a);
+      return a;
+    });
+  }
+  async #filter(
+    timeout: number,
+    limit: number,
+    callback: (data: T & Row, index: number) => boolean
+  ) {
+    var array: (T & Row)[] = [];
+    await forEachAsync(
+      this.ITEMS,
+      (element, index) => {
+        var data = this.readRow(element);
+        var a = callback(data, index);
+        data.row.style.display = a ? "" : "none";
+        this.setEffective(data.row, a);
+        a && array.push(data);
+      },
+      timeout,
+      limit
+    );
+    return array;
+  }
+  // ready methods
+  // ---------------------------------------------------------------------
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  //                                                                      |
+  // ---------------------------------------------------------------------
+  getWritable() {
+    return this.#getWritable();
+  }
+  setWritable(flag: boolean = true) {
+    this.#setWritable(flag);
+  }
+  addTarget(...elements: HTMLElement[]) {
+    this.shortcuts.move.forword.targets?.push(...elements);
+    this.shortcuts.move.backword.targets?.push(...elements);
+    this.shortcuts.selection.forword.targets?.push(...elements);
+    this.shortcuts.selection.backword.targets?.push(...elements);
+    this.shortcuts.clipboard?.copy.targets?.push(...elements);
+    this.shortcuts.clipboard?.paste.targets?.push(...elements);
+    this.shortcuts.clipboard?.cut.targets?.push(...elements);
   }
   readRow(element: HTMLElement) {
     var o: T & Row = Object.create(null);
@@ -151,61 +312,19 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
 
     return o;
   }
-  appendSync(...info: T[]) {
-    info.forEach((data) => {
-      var row = this.#createRow(data);
-      this.root.appendChild(row);
-    });
+  methodeSync<R extends keyof MethodeTable<T>>(
+    event: R,
+    config: MethodeTable<T>[R]
+  ) {
+    this.#methodeSync(event, config);
   }
-  async append(timeout: number, limit: number, ...info: T[]) {
-    await forEachAsync(
-      info,
-      (data) => {
-        var row = this.#createRow(data);
-        this.root.appendChild(row);
-      },
-      timeout,
-      limit
-    );
-  }
-  prependSync(...info: T[]) {
-    info.reverse().forEach((data) => {
-      var row = this.#createRow(data);
-      this.root.prepend(row);
-    });
-  }
-  async prepend(timeout: number, limit: number, ...info: T[]) {
-    await forEachAsync(
-      info.reverse(),
-      (data) => {
-        var row = this.#createRow(data);
-        this.root.prepend(row);
-      },
-      timeout,
-      limit
-    );
-  }
-  insertSync(element: HTMLElement, ...info: T[]) {
-    info.reverse().forEach((data) => {
-      var row = this.#createRow(data);
-      element.after(row);
-    });
-  }
-  async insert(
-    element: HTMLElement,
+  async methode<R extends keyof MethodeTable<T>>(
     timeout: number,
     limit: number,
-    ...info: T[]
+    event: R,
+    config: MethodeTable<T>[R]
   ) {
-    forEachAsync(
-      info.reverse(),
-      (data) => {
-        var row = this.#createRow(data);
-        element.after(row);
-      },
-      timeout,
-      limit
-    );
+    await this.#methode(timeout, limit, event, config);
   }
   sortSync(by: keyof T, type: SortedBy = "down") {
     var data = this.DATA;
@@ -247,45 +366,24 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
     }
   }
   deleteSync(callback: (data: T & Row, index: number) => boolean) {
-    this.DATA.filter(callback).forEach(({ row }) => row.remove());
+    return this.#deleteSync(callback);
   }
   async delete(
     timeout: number,
     limit: number,
     callback: (data: T & Row, index: number) => boolean
   ) {
-    await forEachAsync(
-      this.ITEMS,
-      (element, index) => {
-        var data = this.readRow(element);
-        if (callback(data, index)) {
-          data.row.remove();
-        }
-      },
-      timeout,
-      limit
-    );
+    return await this.#delete(timeout, limit, callback);
   }
   filterSync(callback: (data: T & Row, index: number) => boolean) {
-    this.DATA.forEach(
-      (data, index) =>
-        (data.row.style.display = callback(data, index) ? "" : "none")
-    );
+    return this.#filterSync(callback);
   }
   async filter(
     timeout: number,
     limit: number,
     callback: (data: T & Row, index: number) => boolean
   ) {
-    await forEachAsync(
-      this.ITEMS,
-      (element, index) => {
-        var data = this.readRow(element);
-        data.row.style.display = callback(data, index) ? "" : "none";
-      },
-      timeout,
-      limit
-    );
+    return this.#filter(timeout, limit, callback);
   }
   columns(propertys: (keyof T)[]) {
     var indexes = propertys.map((prop) => this.#propertys.indexOf(prop));
@@ -315,10 +413,10 @@ export class Table<S extends HTMLElement, T> extends ListBox<S> {
     var last = this.LAST_ELEMENT_SELECT;
     const length = SELECT_ELEMENTS.length;
     if (length == array.length)
-      SELECT_ELEMENTS.forEach((ele, i) => this.insert(ele, 20, 2, array[i]));
+      SELECT_ELEMENTS.forEach((ele, i) => this.#insert(ele, 20, 2, array[i]));
     else if (SELECT_ELEMENTS.length)
-      SELECT_ELEMENTS.forEach((ele) => this.insert(ele, 20, 2, ...array));
-    else this.append(20, 2, ...array);
+      SELECT_ELEMENTS.forEach((ele) => this.#insert(ele, 20, 2, ...array));
+    else this.#append(20, 2, ...array);
   }
   async cut() {
     var data = this.DATA_SELECT;

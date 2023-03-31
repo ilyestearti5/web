@@ -175,6 +175,11 @@ export interface MethodTreeLinear<T> {
   append: T;
   insert: tree<T>;
 }
+export interface MethodeTable<T> {
+  append: TableEventData<T>;
+  prepend: TableEventData<T>;
+  insert: TableEventDataElement<T>;
+}
 export interface HistoryEventTreeLinear<T> {
   content: {
     data: tree<T>[];
@@ -182,13 +187,19 @@ export interface HistoryEventTreeLinear<T> {
   }[];
   event: actionsStatus;
 }
+export interface TableEventData<T> {
+  data: T[];
+}
+export interface TableEventDataElement<T> {
+  data: T[];
+  element: HTMLElement;
+}
 /**
  *
  */
-
 export type mainKeys = "Ctrl" | "Shift" | "Alt";
 export type listenerKeyboardShortcut = (
-  input: propertyShortcut,
+  combinition: propertyShortcut,
   event: KeyboardEvent | null,
   type: "key" | "call"
 ) => void;

@@ -10,7 +10,7 @@ const ctx = cnv.getContext("2d");
 cnv.height = 500;
 
 function getSize() {
-  cnv.width = innerWidth;
+  cnv.width = innerWidth / 3;
 }
 
 window.onresize = getSize;

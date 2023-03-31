@@ -171,9 +171,9 @@ export var isLooked = (element: HTMLElement | null): boolean => {
   return pT <= eT && eB <= pB && pL <= eL && eR <= pR;
 };
 /**
- * @param array 
- * @param callback 
- * @returns 
+ * @param array
+ * @param callback
+ * @returns
  */
 export var countOf = <T>(
   array: T[],
