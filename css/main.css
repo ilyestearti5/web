@@ -1,0 +1,163 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #eee;
+  color: #222;
+  font-family: tahoma, arial, sans-serif;
+}
+
+button,
+input,
+textarea {
+  outline: none;
+  border: none;
+  padding: 5px;
+  color: inherit;
+  background-color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+}
+
+a {
+  text-decoration: none;
+}
+
+[role=row],
+[role=treeitem] {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  cursor: pointer;
+}
+[role=row]:not(:last-child),
+[role=treeitem]:not(:last-child) {
+  margin-bottom: 3px;
+}
+[role=row]:active,
+[role=treeitem]:active {
+  opacity: 0.9;
+}
+[role=row] [role=content],
+[role=treeitem] [role=content] {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  align-items: center;
+}
+[role=row] [role=content] [role=column],
+[role=treeitem] [role=content] [role=column] {
+  width: 100%;
+}
+[role=row] > [role=level],
+[role=treeitem] > [role=level] {
+  position: relative;
+}
+[role=row] > [role=level] > [role=icon],
+[role=treeitem] > [role=level] > [role=icon] {
+  display: inline-block;
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+[aria-selected=true] {
+  background-color: #367;
+  color: #ffffff;
+}
+
+[aria-level="0"] > [role=level] {
+  width: 30px;
+}
+
+[aria-level="1"] > [role=level] {
+  width: 45px;
+}
+
+[aria-level="2"] > [role=level] {
+  width: 60px;
+}
+
+[aria-level="3"] > [role=level] {
+  width: 75px;
+}
+
+[aria-level="4"] > [role=level] {
+  width: 90px;
+}
+
+[aria-level="5"] > [role=level] {
+  width: 105px;
+}
+
+[aria-level="6"] > [role=level] {
+  width: 120px;
+}
+
+[aria-level="7"] > [role=level] {
+  width: 135px;
+}
+
+[aria-level="8"] > [role=level] {
+  width: 150px;
+}
+
+[aria-level="9"] > [role=level] {
+  width: 165px;
+}
+
+[aria-level="10"] > [role=level] {
+  width: 180px;
+}
+
+[aria-level="11"] > [role=level] {
+  width: 195px;
+}
+
+[aria-level="12"] > [role=level] {
+  width: 210px;
+}
+
+[aria-level="13"] > [role=level] {
+  width: 225px;
+}
+
+[aria-level="14"] > [role=level] {
+  width: 240px;
+}
+
+[aria-level="15"] > [role=level] {
+  width: 255px;
+}
+
+[aria-level="16"] > [role=level] {
+  width: 270px;
+}
+
+[aria-level="17"] > [role=level] {
+  width: 285px;
+}
+
+[aria-level="18"] > [role=level] {
+  width: 300px;
+}
+
+[aria-level="19"] > [role=level] {
+  width: 315px;
+}/*# sourceMappingURL=main.css.map */

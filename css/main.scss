@@ -1,0 +1,77 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+// global
+body {
+  min-height: 100vh;
+  background-color: #eee;
+  color: #222;
+  font-family: tahoma, arial, sans-serif;
+}
+button,
+input,
+textarea {
+  outline: none;
+  border: none;
+  padding: 5px;
+  color: inherit;
+  background-color: inherit;
+}
+button {
+  cursor: pointer;
+}
+input {
+  width: 100%;
+  padding: 10px;
+}
+a {
+  text-decoration: none;
+}
+// local
+[role="row"],
+[role="treeitem"] {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  user-select: none;
+  cursor: pointer;
+  &:not(:last-child) {
+    margin-bottom: 3px;
+  }
+  &:active {
+    opacity: 0.9;
+  }
+  [role="content"] {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    align-items: center;
+    [role="column"] {
+      width: 100%;
+    }
+  }
+  > [role="level"] {
+    position: relative;
+    > [role="icon"] {
+      display: inline-block;
+      position: absolute;
+      right: 0px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
+[aria-selected="true"] {
+  background-color: #367;
+  color: #ffffff;
+}
+@for $i from 0 to 20 {
+  [aria-level="#{$i}"] {
+    > [role="level"] {
+      width: 15px * ($i + 2);
+    }
+  }
+}

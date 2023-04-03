@@ -1,4 +1,4 @@
-import { Delay } from "./delay.js";
+import { Delay } from "./index.js";
 // functions
 // async function
 export async function forEachAsync<T>(
@@ -8,7 +8,6 @@ export async function forEachAsync<T>(
   limits: number
 ) {
   var dl = new Delay(0);
-
   for (let i = 0; i < array.length; i++) {
     if (i % limits == 0) {
       dl.timeout =
@@ -83,7 +82,6 @@ export function scrollToElement(
   if (!element) return false;
   var { parentElement } = element;
   if (!parentElement) return;
-
   var { x: eX, y: eY, height: eH, width: eW } = element.getBoundingClientRect();
   var {
     x: pX,
@@ -91,7 +89,6 @@ export function scrollToElement(
     height: pH,
     width: pW,
   } = parentElement.getBoundingClientRect();
-
   parentElement.scroll({
     top:
       eY -
@@ -151,10 +148,8 @@ export var randomItem = <T>(array: T[]): { value: T; index: number } => {
  */
 export var isLooked = (element: HTMLElement | null): boolean => {
   if (!element) return false;
-
   var { parentElement } = element;
   if (!parentElement) return true;
-
   var {
     left: eL,
     right: eR,
@@ -167,7 +162,6 @@ export var isLooked = (element: HTMLElement | null): boolean => {
     top: pT,
     bottom: pB,
   } = parentElement.getBoundingClientRect();
-
   return pT <= eT && eB <= pB && pL <= eL && eR <= pR;
 };
 /**
