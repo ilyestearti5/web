@@ -96,6 +96,9 @@ a {
 }
 
 [role=tree] > [role=treegrid][aria-selected=true] {
+  position: relative;
+}
+[role=tree] > [role=treegrid][aria-selected=true] > [role=treeitem] {
   background-color: rgba(51, 119, 255, 0.2);
 }
 

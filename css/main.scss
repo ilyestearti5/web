@@ -81,7 +81,10 @@ a {
 [role="tree"] {
   > [role="treegrid"] {
     &[aria-selected="true"] {
-      background-color: #37f3;
+      position: relative;
+      > [role="treeitem"] {
+        background-color: #37f3;
+      }
     }
   }
 }
