@@ -6,38 +6,38 @@ import {
   scrollToElement,
 } from "./utils.js";
 // the interfaces
-interface propertyShortcut {
+export interface propertyShortcut {
   Ctrl?: boolean;
   Shift?: boolean;
   Alt?: boolean;
   Keys?: number[];
 }
-interface convertionPropertyShortcut {
+export interface convertionPropertyShortcut {
   object: propertyShortcut;
   string: string;
 }
-interface whenShortcutOn {
+export interface whenShortcutOn {
   down: boolean;
   up: boolean;
   press: boolean;
 }
-interface configListBox {
+export interface configListBox {
   movable: boolean;
   scrolling: boolean;
   selection: boolean;
   redirect: boolean;
   clipboard: boolean;
 }
-interface row {
+export interface row {
   row: HTMLElement;
 }
-interface configurationToolBar<T> {
+export interface configurationToolBar<T> {
   label: T;
   iconElement: HTMLElement;
   click: ((e: MouseEvent) => void) | null;
   element: HTMLAnchorElement;
 }
-interface allKeyboardKeys {
+export interface allKeyboardKeys {
   Backspace: number;
   Tab: number;
   Enter: number;
@@ -143,11 +143,11 @@ interface allKeyboardKeys {
   Quote: number;
   // Add more keyboard event codes here as needed
 }
-interface directionShortcut {
+export interface directionShortcut {
   forword: KeyboardShortcut;
   backword: KeyboardShortcut;
 }
-interface shortcutConfigurationsList {
+export interface shortcutConfigurationsList {
   clipboard: null | {
     copy: KeyboardShortcut;
     paste: KeyboardShortcut;
@@ -165,15 +165,15 @@ interface shortcutConfigurationsList {
     close: KeyboardShortcut;
   };
 }
-interface tree<T> {
+export interface tree<T> {
   body: T;
   innerTree: tree<T>[];
 }
-interface convertionDataTree {
+export interface convertionDataTree {
   query: string;
   element: HTMLElement;
 }
-interface methodesTableMap<T> {
+export interface methodesTableMap<T> {
   append: T[];
   prepend: T[];
   after: T[];
@@ -183,7 +183,7 @@ interface methodesTableMap<T> {
     direction: SortedBy;
   };
 }
-interface methodesTreeMap<T> {
+export interface methodesTreeMap<T> {
   after: T[];
   before: T[];
   append: T[];
@@ -196,18 +196,25 @@ interface methodesTreeMap<T> {
     deep: boolean;
   };
 }
+export interface subtreePropertys<T> {
+  property: keyof T;
+  value: string;
+}
 // data types
-type mainKeys = "Ctrl" | "Shift" | "Alt";
-type listenerKeyboardShortcut = (
+export type mainKeys = "Ctrl" | "Shift" | "Alt";
+export type listenerKeyboardShortcut = (
   combinition: propertyShortcut,
   event: KeyboardEvent | null,
   type: "key" | "call"
 ) => void;
-type direction = "forword" | "backword";
-type submitListener = (type: submitTypePress, element: HTMLElement) => void;
-type submitTypePress = "call" | "keypress" | "click";
-type SortedBy = "down" | "up";
-type callBackQuery<T> = (data: T, index: number) => string;
+export type direction = "forword" | "backword";
+export type submitListener = (
+  type: submitTypePress,
+  element: HTMLElement
+) => void;
+export type submitTypePress = "call" | "keypress" | "click";
+export type SortedBy = "down" | "up";
+export type callBackQuery<T> = (data: T, index: number) => string;
 // classes projects
 export class Delay {
   #counter: NodeJS.Timeout | number = 0;
@@ -345,6 +352,114 @@ export class KeyboardShortcut {
     BracketRight: 221,
     Quote: 222,
   };
+/**
+   * @example
+   * {
+      Backspace: 8,
+      Tab: 9,
+      Enter: 13,
+      ShiftLeft: 16,
+      ShiftRight: 16,
+      ControlLeft: 17,
+      ControlRight: 17,
+      AltLeft: 18,
+      AltRight: 18,
+      Pause: 19,
+      CapsLock: 20,
+      Escape: 27,
+      Space: 32,
+      PageUp: 33,
+      PageDown: 34,
+      End: 35,
+      Home: 36,
+      ArrowLeft: 37,
+      ArrowUp: 38,
+      ArrowRight: 39,
+      ArrowDown: 40,
+      PrintScreen: 44,
+      Insert: 45,
+      Delete: 46,
+      Digit0: 48,
+      Digit1: 49,
+      Digit2: 50,
+      Digit3: 51,
+      Digit4: 52,
+      Digit5: 53,
+      Digit6: 54,
+      Digit7: 55,
+      Digit8: 56,
+      Digit9: 57,
+      A: 65,
+      B: 66,
+      C: 67,
+      D: 68,
+      E: 69,
+      F: 70,
+      G: 71,
+      H: 72,
+      I: 73,
+      J: 74,
+      K: 75,
+      L: 76,
+      M: 77,
+      N: 78,
+      O: 79,
+      P: 80,
+      Q: 81,
+      R: 82,
+      S: 83,
+      T: 84,
+      U: 85,
+      V: 86,
+      W: 87,
+      X: 88,
+      Y: 89,
+      Z: 90,
+      MetaLeft: 91,
+      MetaRight: 92,
+      ContextMenu: 93,
+      Numpad0: 96,
+      Numpad1: 97,
+      Numpad2: 98,
+      Numpad3: 99,
+      Numpad4: 100,
+      Numpad5: 101,
+      Numpad6: 102,
+      Numpad7: 103,
+      Numpad8: 104,
+      Numpad9: 105,
+      NumpadMultiply: 106,
+      NumpadAdd: 107,
+      NumpadSubtract: 109,
+      NumpadDecimal: 110,
+      NumpadDivide: 111,
+      F1: 112,
+      F2: 113,
+      F3: 114,
+      F4: 115,
+      F5: 116,
+      F6: 117,
+      F7: 118,
+      F8: 119,
+      F9: 120,
+      F10: 121,
+      F11: 122,
+      F12: 123,
+      NumLock: 144,
+      ScrollLock: 145,
+      Semicolon: 186,
+      Equal: 187,
+      Comma: 188,
+      Minus: 189,
+      Period: 190,
+      Slash: 191,
+      Backquote: 192,
+      BracketLeft: 219,
+      Backslash: 220,
+      BracketRight: 221,
+      Quote: 222,
+    };
+   */
   static get keyboardKeys() {
     return this.#keyboardKeys;
   }
@@ -371,7 +486,7 @@ export class KeyboardShortcut {
       Shift,
       Keys: k == "" ? [] : [keyCode],
     };
-    if (!this.#activate || !this.isValide(o)) return;
+    if (!this.#activate || !this.isvalide(o)) return;
     switch (type) {
       case "keydown": {
         this.#on_down_fn.forEach((fn) => fn(o, event, "key"));
@@ -407,18 +522,34 @@ export class KeyboardShortcut {
     this.when.down = true;
     KeyboardShortcut.#all.add(this);
   }
+  /**
+   * true if the shortcut work
+   */
   get activate(): boolean {
     return this.#activate;
   }
   set activate(v: boolean) {
     this.#activate = Boolean(v);
   }
+  /**
+   * label of shortcut (is unique)
+   */
   get label(): string {
     return this.#label;
   }
+  /**
+   * the propertys of shortcut `Ctrl`, `Shift`, `Alt` has boolean or undefined types, Some Keys
+   */
   get propertys(): propertyShortcut {
     return this.#propertys;
   }
+  /**
+   * the shortcut when work and has 3 valus `down`, `up`, `press`
+   * @example
+   * shortcut.when.down = true;
+   * shortcut.when.up = false;
+   * // the shortcut is gona be work when user pressed keyboard down
+   */
   get when(): whenShortcutOn {
     var a = this;
     return {
@@ -473,19 +604,50 @@ export class KeyboardShortcut {
       this.#press = v.press;
     }
   }
+  /**
+   * get the propertys of shortcut as string
+   * @example
+   * var short = new KeyboardShortcut("my shortcut",[
+   *  {
+   *    Ctrl: true,
+   *    Shift: false,
+   *    Alt: undefined,
+   *    Keys: [...numbersKeys]
+   *  }
+   * ],null)
+   * // the text is :
+   * "Ctrl+Alt?+..."
+   * // with repleace ... by what keysof numbersKeys
+   * // check function static `keyOf()`
+   */
   get text(): string {
     return KeyboardShortcut.#toString(this.#propertys);
   }
+  /**
+   * get status of this shortcut
+   * @return "global" if the shortcut work in anywher element
+   * and "local" if work in special elements
+   */
   get status(): "global" | "local" {
     return this.targets ? "local" : "global";
   }
   #change(content: string | propertyShortcut) {
     this.#propertys = KeyboardShortcut.convertto(content, "object");
   }
+  /**
+   * change shortcut
+   * @example
+   * // for expmle the shortcut has Ctrl+D combinition
+   * Keyboard.label("shortcut").change("Ctrl+A")
+   * // now is changed fo Ctrl+A combinition
+   * // you can use
+   * Keyboard.label("shortcut").change({ Ctrl: true , Shift: false , Alt: false , Keys: [65] });
+   * // 65 is represent the key code of A
+  */
   change(content: string | propertyShortcut) {
     this.#change(content);
   }
-  #isValide(short: string | propertyShortcut) {
+  #isvalide(short: string | propertyShortcut) {
     var shortcut = KeyboardShortcut.convertto(short, "object");
     if (
       KeyboardShortcut.#main_keys.some(
@@ -503,45 +665,92 @@ export class KeyboardShortcut {
       return false;
     return true;
   }
-  isValide(short: string | propertyShortcut) {
-    return this.#isValide(short);
+  /**
+   * test if this shortcut is work with the short
+   * @example
+   * var short = new KeyboardShortcut("my shortcut",[
+   *  {
+   *    Ctrl: true,
+   *    Shift: false,
+   *    Alt: undefined,
+   *    Keys: [65]
+   *  }
+   * ],null)
+   * console.log(short.text); // output is : 
+   * "Ctrl+Alt?+A"
+   * // the `?` operator in `Alt?` sub string meanse this key is optional can be pressed and can be not pressed
+   * console.log(short.isvalide("Ctrl+A")) // true
+   * console.log(short.isvalide("Ctrl+Alt+A")) // true
+   * console.log(short.isvalide("Ctrl+D")) // false
+   */
+  isvalide(short: string | propertyShortcut) {
+    return this.#isvalide(short);
   }
+  /**
+   * call function for when press is valide down
+   * @param listener callback function
+   * @returns { KeyboardShortcut } 
+   */
   ondown(listener: listenerKeyboardShortcut): KeyboardShortcut {
     typeof listener == "function" && this.#on_down_fn.push(listener);
     return this;
   }
+  /**
+   * call function for when press is valide up
+   * @param listener callback function
+   * @returns { KeyboardShortcut } 
+   */
   onup(listener: listenerKeyboardShortcut): KeyboardShortcut {
     typeof listener == "function" && this.#on_up_fn.push(listener);
     return this;
   }
+  /**
+   * call function for when press is valide press
+   * @param listener callback function
+   * @returns { KeyboardShortcut } 
+   */
+  onpress(listener: listenerKeyboardShortcut): KeyboardShortcut {
+    typeof listener == "function" && this.#on_press_fn.push(listener);
+    return this;
+  }
+  /**
+   * remove callback usable before from `down`  
+   * @returns true if this callback exists before and false other ways
+   */
   offdown(listener: listenerKeyboardShortcut): boolean {
     var index = this.#on_down_fn.indexOf(listener);
     if (index < 0) return false;
     this.#on_down_fn.splice(index, 1);
     return true;
   }
+  /**
+   * remove callback usable before from `up`  
+   * @returns true if this callback exists before and false other ways
+   */
   offup(listener: listenerKeyboardShortcut): boolean {
     var index = this.#on_up_fn.indexOf(listener);
     if (index < 0) return false;
     this.#on_up_fn.splice(index, 1);
     return true;
   }
+  /**
+   * remove callback usable before from `press`  
+   * @returns true if this callback exists before and false other ways
+   */
+  offpress(listener: listenerKeyboardShortcut): boolean {
+    var index = this.#on_press_fn.indexOf(listener);
+    if (index < 0) return false;
+    this.#on_press_fn.splice(index, 1);
+    return true;
+  }
   on(
-    event: "down" | "up",
+    event: "down" | "up" | "press",
     listener: listenerKeyboardShortcut
   ): KeyboardShortcut {
-    return event == "down"
-      ? this.ondown(listener)
-      : event == "up"
-      ? this.onup(listener)
-      : this;
+    return this[`on${event}`](listener);
   }
-  off(event: "down" | "up", listener: listenerKeyboardShortcut): boolean {
-    return event == "down"
-      ? this.offdown(listener)
-      : event == "up"
-      ? this.offup(listener)
-      : false;
+  off(event: "down" | "up" | "press", listener: listenerKeyboardShortcut): boolean {
+    return this[`off${event}`](listener);
   }
   static #toProp(keystring: string = ""): propertyShortcut {
     var o: propertyShortcut = {
@@ -621,7 +830,7 @@ export class KeyboardShortcut {
   ): Set<KeyboardShortcut> {
     var shortcut = this.convertto(combinition, "object");
     var ready = new Set(
-      Array.from(this.#all).filter((shrt) => shrt.isValide(shortcut))
+      Array.from(this.#all).filter((shrt) => shrt.isvalide(shortcut))
     );
     press.forEach((pressType) => {
       switch (pressType) {
@@ -649,7 +858,7 @@ export class KeyboardShortcut {
   ) {
     return this.#exec(combinition, press);
   }
-  static #execCommand(
+  static #execcommand(
     label: string,
     press: ("down" | "up")[] = ["down"]
   ): KeyboardShortcut | null {
@@ -671,8 +880,8 @@ export class KeyboardShortcut {
     }
     return fd;
   }
-  static execCommand(label: string, press: ("down" | "up")[] = ["down"]) {
-    return this.#execCommand(label, press);
+  static execcommand(label: string, press: ("down" | "up")[] = ["down"]) {
+    return this.#execcommand(label, press);
   }
   static #watch(...elements: HTMLElement[]) {
     var short = this.create(
@@ -707,7 +916,7 @@ export class KeyboardShortcut {
     return Array.from(this.#all);
   }
 }
-export abstract class ListBox {
+export class ListBox {
   // title of listbox is unique
   // direction of listbox (forword|backword)
   #selection_direction: direction = "forword";
@@ -726,6 +935,7 @@ export abstract class ListBox {
   };
   // on submit functions
   protected onSubmitFunctions: submitListener[] = [];
+  protected onSelectionFunctions: Function[] = [];
   // on change content functions
   /**
    *
@@ -818,7 +1028,7 @@ export abstract class ListBox {
         submit: KeyboardShortcut.create(`${this.title} - submit`, `Enter`, [
           this.root,
         ]).ondown(() => {
-          this.submit("keypress");
+          this.submit("keypress", this.ELEMENT_DIRECTION!);
         }),
         cancel: KeyboardShortcut.create(`${this.title} - cancel`, "Escape", [
           this.root,
@@ -946,6 +1156,7 @@ export abstract class ListBox {
       if (this.configurations.scrolling && !isLooked(ele))
         scrollToElement(ele, -1);
     }
+    this.onSelectionFunctions.forEach((fn) => fn("forword"));
   }
   backword(count: number) {
     if (!this.configurations.movable) return;
@@ -968,10 +1179,12 @@ export abstract class ListBox {
       if (this.configurations.scrolling && !isLooked(ele))
         scrollToElement(ele, 0);
     }
+    this.onSelectionFunctions.forEach((fn) => fn("backword"));
   }
   forwordSelection(count: number) {
     if (!count) {
       this.scroll("forword");
+      this.onSelectionFunctions.forEach((fn) => fn("forword"));
       return;
     }
     var { FIRST_ELEMENT_SELECT: first, LAST_ELEMENT_SELECT: last } = this;
@@ -993,6 +1206,7 @@ export abstract class ListBox {
   backwordSelection(count: number) {
     if (!count) {
       this.scroll("backword");
+      this.onSelectionFunctions.forEach((fn) => fn("backword"));
       return;
     }
     var { FIRST_ELEMENT_SELECT: first, LAST_ELEMENT_SELECT: last } = this;
@@ -1021,6 +1235,16 @@ export abstract class ListBox {
     this.onSubmitFunctions.splice(index, 1);
     return true;
   }
+  onselection(listener: submitListener) {
+    typeof listener == "function" && this.onSelectionFunctions.push(listener);
+    return this;
+  }
+  offselection(listener: submitListener) {
+    var index = this.onSelectionFunctions.indexOf(listener);
+    if (index < 0) return false;
+    this.onSelectionFunctions.splice(index, 1);
+    return true;
+  }
   submit(type: submitTypePress = "call", element = this.ELEMENT_DIRECTION) {
     if (!this.SELECTD_ELEMENTS.length || this.rowname === "treeitem") return;
     this.onSubmitFunctions.forEach((fn) => fn(type, element!));
@@ -1034,9 +1258,28 @@ export abstract class ListBox {
     this[dir](count);
   }
   selection(dir: direction = "forword", count: number = 1) {
-    dir == "forword"
-      ? this.forwordSelection(count)
-      : this.backwordSelection(count);
+    this[`${dir}Selection`](count);
+  }
+  flipshortcut(to: "top-bottom" | "left-right") {
+    var { selection, move } = this.shortcuts;
+    var forword = to == "top-bottom" ? "ArrowDown" : "ArrowRight";
+    var backword = to == "top-bottom" ? "ArrowUp" : "ArrowLeft";
+    selection.forword.change(
+      `Shift${KeyboardShortcut.separatorShortcuts}${forword}`
+    );
+    selection.backword.change(
+      `Shift${KeyboardShortcut.separatorShortcuts}${backword}`
+    );
+    move.forword.change(forword);
+    move.backword.change(backword);
+  }
+  settargetsshortcuts(targets: HTMLElement[] | null = null) {
+    this.shortcuts.move.forword.targets = targets;
+    this.shortcuts.move.backword.targets = targets;
+    this.shortcuts.selection.forword.targets = targets;
+    this.shortcuts.selection.backword.targets = targets;
+    this.shortcuts.status.submit.targets = targets;
+    this.shortcuts.status.cancel.targets = targets;
   }
   static get all() {
     return this.#all;
@@ -1134,14 +1377,14 @@ export class Iterations<T> extends ListBox {
     ) as HTMLElement[];
   }
   column(element: HTMLElement, column: keyof T) {
-    const cols = this.columns(element);
+    var cols = this.columns(element);
     var index = this.propertys.indexOf(column);
     return cols[index];
   }
   createrow(input: T): HTMLElement {
     input = defaultObject(input, this.defaultValues);
-    const result = createElement("div", "", { role: this.rowname });
-    const levelElement = createElement("div", "", { role: "level" });
+    var result = createElement("div", "", { role: this.rowname });
+    var levelElement = createElement("div", "", { role: "level" });
     result.appendChild(levelElement);
     var contentElement = createElement("div", "", { role: "content" });
     this.propertys.forEach((prop, index) => {
@@ -1157,9 +1400,9 @@ export class Iterations<T> extends ListBox {
     return result;
   }
   readrow(element: HTMLElement): T & row {
-    const result: T & row = Object.create(null);
+    var result: T & row = Object.create(null);
     result.row = element;
-    const cols = this.columns(element);
+    var cols = this.columns(element);
     this.propertys.forEach((prop, index) => {
       Object.defineProperty(result, prop, {
         get() {
@@ -1175,11 +1418,11 @@ export class Iterations<T> extends ListBox {
     });
     return result;
   }
-  setHiddenPropertys(...props: (keyof T)[]) {
+  sethiddenpropertys(...props: (keyof T)[]) {
     this.#hiddenPropertys = props;
     this.ITEMS.forEach((element) => {
       var cols = this.columns(element);
-      const indexs = this.#hiddenPropertys.map((prop) =>
+      var indexs = this.#hiddenPropertys.map((prop) =>
         this.propertys.indexOf(prop)
       );
       cols.forEach(
@@ -1201,8 +1444,8 @@ export class Iterations<T> extends ListBox {
     return o;
   }
   static create<R>(title: string, defaultValue: R) {
-    const root = createElement("div", "", { role: "iterations" });
-    const iterable = new this(
+    var root = createElement("div", "", { role: "iterations" });
+    var iterable = new this(
       root,
       title,
       Object.keys(defaultValue as object) as (keyof R)[],
@@ -1213,6 +1456,14 @@ export class Iterations<T> extends ListBox {
   throwLoading() {
     if (this.isloading)
       throw Error("cannot be update the content is stay loading...");
+  }
+  override settargetsshortcuts(targets: HTMLElement[] | null = null): void {
+    super.settargetsshortcuts(targets);
+    this.shortcuts.find!.forword.targets = targets;
+    this.shortcuts.find!.backword.targets = targets;
+    this.shortcuts.clipboard!.copy.targets = targets;
+    this.shortcuts.clipboard!.cut.targets = targets;
+    this.shortcuts.clipboard!.paste.targets = targets;
   }
 }
 export class Table<T> extends Iterations<T> {
@@ -1299,7 +1550,7 @@ export class Table<T> extends Iterations<T> {
   }
   override async copy() {
     if (!this.configurations.clipboard) return;
-    const selectedData = this.SELECTD_ELEMENTS.map((element) =>
+    var selectedData = this.SELECTD_ELEMENTS.map((element) =>
       this.json(element)
     );
     await navigator.clipboard.writeText(
@@ -1308,7 +1559,7 @@ export class Table<T> extends Iterations<T> {
   }
   override async cut() {
     if (!this.configurations.clipboard) return;
-    const selectedData = this.SELECTD_ELEMENTS.map((element) => {
+    var selectedData = this.SELECTD_ELEMENTS.map((element) => {
       element.remove();
       this.json(element);
     });
@@ -1318,7 +1569,7 @@ export class Table<T> extends Iterations<T> {
     var array = Array.from(
       JSON.parse(await navigator.clipboard.readText())
     ) as T[];
-    const {
+    var {
       SELECTD_ELEMENTS: selectedElement,
       LAST_ELEMENT_SELECT: lastSelectedElement,
     } = this;
@@ -1455,6 +1706,9 @@ export class Table<T> extends Iterations<T> {
     }
     this.isloading = false;
   }
+  static override create<R>(title: string, defaultValue: R): Table<R> {
+    return super.create(title, defaultValue) as Table<R>;
+  }
 }
 export class TreeLinear<T> extends Iterations<T> {
   // the main element has childs only
@@ -1467,7 +1721,7 @@ export class TreeLinear<T> extends Iterations<T> {
   // separator between querys
   public separator = "/";
   // what the subtree element has
-  #subtree_propertys: { value: string; property: keyof T }[] = [];
+  #subtree_propertys: subtreePropertys<T>[] = [];
   constructor(
     root: HTMLElement,
     title: string,
@@ -1482,11 +1736,11 @@ export class TreeLinear<T> extends Iterations<T> {
       open: KeyboardShortcut.create(`${this.title} - open`, "ArrowRight", [
         this.root,
       ]).ondown(() => {
-        const selectedElement = this.SELECTD_ELEMENTS;
+        var selectedElement = this.SELECTD_ELEMENTS;
         selectedElement.forEach((element) => {
           if (this.#isclosed(element)) this.#open(element);
           else {
-            const firstElement = this.firstchildof(element);
+            var firstElement = this.firstchildof(element);
             if (firstElement) {
               this.setSelect(element, false);
               this.setSelect(firstElement, true);
@@ -1497,7 +1751,7 @@ export class TreeLinear<T> extends Iterations<T> {
       close: KeyboardShortcut.create(`${this.title} - close`, "ArrowLeft", [
         this.root,
       ]).ondown(() => {
-        const selectedElement = this.SELECTD_ELEMENTS;
+        var selectedElement = this.SELECTD_ELEMENTS;
         selectedElement.forEach((element) => {
           if (this.#isclosed(element)) {
             var outer = this.#outer(element);
@@ -1544,7 +1798,7 @@ export class TreeLinear<T> extends Iterations<T> {
   }
   #to_query(element: HTMLElement): string {
     var outer = this.#outer(element);
-    const data = this.readrow(element);
+    var data = this.readrow(element);
     if (!outer) return `${this.#callbackquery(data, 0)}`;
     else {
       var index = this.#inner(outer).indexOf(element);
@@ -1563,7 +1817,7 @@ export class TreeLinear<T> extends Iterations<T> {
     for (let i = 0; i < spliting.length; i++) {
       if (!result) return null;
       var fd = this.#inner(result).find((element, index) => {
-        const data = this.readrow(element);
+        var data = this.readrow(element);
         return this.#callbackquery(data, index) == spliting[i];
       });
       result = fd ? fd : null;
@@ -1579,16 +1833,15 @@ export class TreeLinear<T> extends Iterations<T> {
   #isopend(element: HTMLElement) {
     if (element == this.#mainTreeElement) return true;
     if (!this.issubtree(element)) return false;
-    var showMoreIcon = this.#getIconElement(element);
-    return !showMoreIcon || showMoreIcon.ariaExpanded === "true";
+    return element.ariaHidden === "false";
   }
   #isclosed(element: HTMLElement) {
     if (element == this.#mainTreeElement) return false;
     if (!this.issubtree(element)) return true;
-    var showMoreIcon = this.#getIconElement(element);
-    return !showMoreIcon || showMoreIcon.ariaExpanded === "false";
+    return element.ariaHidden === "true";
   }
   #open(element: HTMLElement) {
+    element.ariaHidden = "false";
     var showMoreIcon = this.#getIconElement(element);
     if (showMoreIcon)
       showMoreIcon.innerHTML = `<i class="material-icons">expand_more</i>`;
@@ -1601,6 +1854,7 @@ export class TreeLinear<T> extends Iterations<T> {
     });
   }
   #close(element: HTMLElement) {
+    element.ariaHidden = "true";
     var showMoreIcon = this.#getIconElement(element);
     if (showMoreIcon)
       showMoreIcon.innerHTML = `<i class="material-icons">chevron_right</i>`;
@@ -1639,7 +1893,7 @@ export class TreeLinear<T> extends Iterations<T> {
   }
   childsOf(any: HTMLElement | string) {
     any = this.convertto(any, "element");
-    const inner = this.#inner(any);
+    var inner = this.#inner(any);
     var result: HTMLElement[] = [];
     inner.forEach((itemElement) =>
       result.push(itemElement, ...this.childsOf(itemElement))
@@ -1649,23 +1903,23 @@ export class TreeLinear<T> extends Iterations<T> {
   lastchildof(any: HTMLElement | string) {
     any = this.convertto(any, "element");
     var inner = this.#inner(any);
-    var result = inner[inner.length - 1];
+    var result = inner.at(-1);
     if (!result) return null;
     inner = this.#inner(result);
     while (inner.length) {
-      result = inner[inner.length - 1];
+      result = inner.at(-1)!;
       inner = this.#inner(result);
     }
     return result;
   }
   firstchildof(any: string | HTMLElement) {
     any = this.convertto(any, "element");
-    const inner = this.#inner(any);
+    var inner = this.#inner(any);
     return inner.length ? inner[0] : null;
   }
   issubtree(element: HTMLElement) {
     if (this.#mainTreeElement == element) return true;
-    const columns = this.columns(element);
+    var columns = this.columns(element);
     return this.#subtree_propertys.every(
       ({ property, value }) =>
         columns[this.propertys.indexOf(property)].innerHTML == value
@@ -1677,19 +1931,19 @@ export class TreeLinear<T> extends Iterations<T> {
     closed: boolean = false,
     visible: boolean = true
   ): HTMLElement {
-    const result = super.createrow(input);
+    var result = super.createrow(input);
     result.ariaLevel = `${lvl}`;
+    result.ariaHidden = `${closed}`;
     this.setshow(result, visible);
     if (this.issubtree(result)) {
       result.ariaExpanded = "true";
-      const showMoreIcon = createElement(
+      var showMoreIcon = createElement(
         "span",
         `<i class="material-icons">${
           closed ? "chevron_right" : "expand_more"
         }</i>`,
         {
           role: "icon",
-          "aria-expanded": !closed,
         }
       );
       showMoreIcon.onclick = () => this.#toggle(result);
@@ -1704,17 +1958,18 @@ export class TreeLinear<T> extends Iterations<T> {
       innerTree: this.#inner(element).map((ele) => this.read(ele)),
     };
   }
-  setsubtreepropertys(...propertys: { value: string; property: keyof T }[]) {
+  // setters
+  setsubtreepropertys(...propertys: subtreePropertys<T>[]) {
     this.#subtree_propertys = propertys;
     this.ITEMS.forEach((element) => {
-      const issubtree = this.issubtree(element);
+      var issubtree = this.issubtree(element);
       var iconShowMore = element.querySelector(
         `[role="level"] > [role="icon"]`
       );
       element.ariaExpanded = `${issubtree}`;
       if (issubtree) {
         if (!iconShowMore) {
-          const showMoreIcon = createElement(
+          var showMoreIcon = createElement(
             "span",
             `<i class="material-icons">chevron_right</i>`,
             {
@@ -1733,6 +1988,11 @@ export class TreeLinear<T> extends Iterations<T> {
     // set effectivity true if the flag visible or that is gonna be false
     this.setEffective(rowElement, flag);
   }
+  override settargetsshortcuts(targets: HTMLElement[] | null = null): void {
+    super.settargetsshortcuts(targets);
+    this.shortcuts.inner!.open.targets = targets;
+    this.shortcuts.inner!.close.targets = targets;
+  }
   protected async append(
     element: HTMLElement | string,
     data: T[],
@@ -1742,8 +2002,8 @@ export class TreeLinear<T> extends Iterations<T> {
     // the same steps in the methode `appendSync`
     element = this.convertto(element, "element");
     if (!this.issubtree(element)) throw Error("Cannot Be add in this item");
-    const isopend = this.#isopend(element);
-    const initLevel = this.getlevel(element) + 1;
+    var isopend = this.#isopend(element);
+    var initLevel = this.getlevel(element) + 1;
     element = this.lastchildof(element) || element;
     data = data.reverse();
     // create delay for make sure the append is not directly append all element
@@ -1762,8 +2022,8 @@ export class TreeLinear<T> extends Iterations<T> {
     // the same steps of appendSync method just remove step number 5
     element = this.convertto(element, "element");
     if (!this.issubtree(element)) throw Error("Cannot Be add in this item");
-    const isopend = this.#isopend(element);
-    const initLevel = this.getlevel(element) + 1;
+    var isopend = this.#isopend(element);
+    var initLevel = this.getlevel(element) + 1;
     data = data.reverse();
     var dl = new Delay(timeout);
     for (let i = 0; i < data.length; i++) {
@@ -1781,7 +2041,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var lvl = this.getlevel(element);
     var inner = this.childsOf(element);
     var isclosed = element.style.display == "none";
-    element = inner.length ? inner[inner.length - 1] : element;
+    element = inner.at(-1) || element;
     await forEachAsync(
       data.reverse(),
       (d) => element.after(this.createrow(d, lvl, false, isclosed)),
@@ -1841,9 +2101,9 @@ export class TreeLinear<T> extends Iterations<T> {
     // throw error if the element gona append as not subtree element
     if (!this.issubtree(element)) throw Error("Cannot Be add in this item");
     // isopend true if the element is opend and thes inner items is visible else false
-    const isopend = this.#isopend(element);
+    var isopend = this.#isopend(element);
     // the initial level of element expl: element level => 10 the new items element level => 11
-    const initLevel = this.getlevel(element) + 1;
+    var initLevel = this.getlevel(element) + 1;
     // test if this element has a last element child reccur or not => if has the element gona change
     element = this.lastchildof(element) || element;
     // reverse data for when append to element the order stay fix
@@ -1859,8 +2119,8 @@ export class TreeLinear<T> extends Iterations<T> {
     // the same steps of appendSync method just remove step number 5
     element = this.convertto(element, "element");
     if (!this.issubtree(element)) throw Error("Cannot Be add in this item");
-    const isopend = this.#isopend(element);
-    const initLevel = this.getlevel(element) + 1;
+    var isopend = this.#isopend(element);
+    var initLevel = this.getlevel(element) + 1;
     data = data.reverse();
     for (let i = 0; i < data.length; i++)
       element.after(this.createrow(data[i], initLevel, true, isopend));
@@ -1871,7 +2131,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var inner = this.#inner(element);
     var isclosed = element.style.display == "none";
     while (inner.length) {
-      element = inner[inner.length - 1];
+      element = inner.at(-1)!;
       inner = this.#inner(element);
     }
     data
@@ -2090,7 +2350,7 @@ export class TreeLinear<T> extends Iterations<T> {
     };
   }
   override async copy() {
-    const selectedElement = this.SELECTD_ELEMENTS;
+    var selectedElement = this.SELECTD_ELEMENTS;
     await navigator.clipboard.writeText(
       JSON.stringify(
         selectedElement.map((ele) => this.jsontree(ele)),
@@ -2100,7 +2360,7 @@ export class TreeLinear<T> extends Iterations<T> {
     );
   }
   override async cut(timeout: number = 20, limit: number = 1) {
-    const selectedElement = this.SELECTD_ELEMENTS;
+    var selectedElement = this.SELECTD_ELEMENTS;
     await navigator.clipboard.writeText(
       JSON.stringify(
         selectedElement.map((ele) => this.jsontree(ele)),
@@ -2114,7 +2374,7 @@ export class TreeLinear<T> extends Iterations<T> {
     this.throwLoading();
     var data = JSON.parse(await navigator.clipboard.readText());
     if (!Array.isArray(data)) throw Error("paste ignore");
-    const selected = this.SELECTD_ELEMENTS.filter((ele) => this.issubtree(ele));
+    var selected = this.SELECTD_ELEMENTS.filter((ele) => this.issubtree(ele));
     if (selected.length == data.length) {
       await forEachAsync(
         selected,
@@ -2125,8 +2385,15 @@ export class TreeLinear<T> extends Iterations<T> {
       );
     }
   }
+  override flipshortcut(to: "top-bottom" | "left-right"): void {
+    super.flipshortcut(to);
+    var open = to == "top-bottom" ? "ArrowRight" : "ArrowDown";
+    var close = to == "top-bottom" ? "ArrowLeft" : "ArrowUp";
+    this.shortcuts.inner?.open.change(open);
+    this.shortcuts.inner?.open.change(close);
+  }
   static override create<T>(title: string, defaultValue: T): TreeLinear<T> {
-    const tree = super.create(title, defaultValue);
+    var tree = super.create(title, defaultValue);
     return tree as TreeLinear<T>;
   }
 }
@@ -2183,7 +2450,7 @@ export class Graphe {
   }
   draw(context: CanvasRenderingContext2D, showOrigins: boolean = false) {
     context.save();
-    const { origins } = this;
+    var { origins } = this;
     [...origins, this].forEach((graphe) => {
       var { x, y, r } = graphe;
       context.translate(x, y);
@@ -2226,10 +2493,10 @@ export class Graphe {
     context.restore();
   }
   static info(g1: Graphe, g2: Graphe = this.origin) {
-    const [x1, y1] = g1.relative;
-    const [x2, y2] = g2.relative;
-    const diffX: number = x1 - x2;
-    const diffY: number = y1 - y2;
+    var [x1, y1] = g1.relative;
+    var [x2, y2] = g2.relative;
+    var diffX: number = x1 - x2;
+    var diffY: number = y1 - y2;
     return {
       diffX,
       diffY,
@@ -2351,5 +2618,88 @@ export class ToolBar<T> extends ListBox {
     var find = this.findTip(label);
     if (!find) return;
     find.element.click();
+  }
+}
+export class Notifications<T> {
+  static mainNotificationElement = createElement("div", "", {
+    role: "notifications",
+  });
+  #inputs: (keyof T)[] = [];
+  #title: string = "";
+  #buttons: ListBox;
+  #titleElement = createElement("div", "", { role: "title-notification" });
+  #contentElement = createElement("div", "", { role: "content-notification" });
+  #notifictionElement = createElement("div", "", {
+    role: "notification",
+    tabindex: -1,
+  });
+  static #all: Set<Notifications<any>> = new Set();
+  constructor(title: string, ...inputs: (keyof T)[]) {
+    this.title = title;
+    this.#buttons = new ListBox(
+      createElement("div", "", {}),
+      `notification - ${this.title}`
+    );
+    this.#inputs = inputs;
+    this.#notifictionElement.append(
+      this.#titleElement,
+      this.#contentElement,
+      this.#buttons.root
+    );
+    this.#buttons.configurations.selection = false;
+    this.#buttons.configurations.clipboard = false;
+    this.#buttons.configurations.scrolling = false;
+    this.#buttons.settargetsshortcuts([this.#notifictionElement]);
+    this.#buttons.flipshortcut("left-right");
+    this.#buttons.mouse = true;
+    Notifications.#all.add(this);
+  }
+  get inputs() {
+    return this.#inputs;
+  }
+  get title() {
+    return this.#title;
+  }
+  set title(v) {
+    this.#title = v;
+    this.#titleElement.innerHTML = `${v}`;
+  }
+  set content(v: string) {
+    this.#contentElement.innerHTML = v;
+  }
+  get content() {
+    return this.#contentElement.innerHTML;
+  }
+  static start(element: HTMLElement = document.body) {
+    element.appendChild(this.mainNotificationElement);
+  }
+  close() {
+    this.#notifictionElement.remove();
+    this.#buttons.root.innerHTML = "";
+  }
+  open(init: keyof T | undefined = this.#inputs.at(-1)): Promise<keyof T> {
+    this.#buttons.root.innerHTML = this.#inputs
+      .map(
+        (input) =>
+          `<span aria-selected="${init === input}">${input.toString()}</span>`
+      )
+      .join("\n");
+    return new Promise((resolve, reject) => {
+      var fn: submitListener = (type, element) => {
+        resolve(element.innerHTML as keyof T);
+        this.#buttons.offsubmit(fn);
+      };
+      Notifications.mainNotificationElement.appendChild(
+        this.#notifictionElement
+      );
+      this.#buttons.onsubmit(fn);
+      this.#notifictionElement.focus();
+    });
+  }
+  delete() {
+    Notifications.#all.delete(this);
+  }
+  static get all() {
+    return Array.from(this.#all);
   }
 }

@@ -1,8 +1,43 @@
-import { TreeLinear } from "./lib/index.js"
-const tree = TreeLinear.create("Explorer", { name: "No Provied", type: "folder" });
-document.body.appendChild(tree.root);
-tree.setsubtreepropertys({ property: "type", value: "folder" });
-tree.setHiddenPropertys("type");
-tree.methodeSync("append", "", [{ name: "New Folder" }]);
-tree.setcallbackquery(({ name }) => `${name}`);
-tree.methodeSync("insert", "New Folder", [{ body: { name: "Lib" }, innerTree: [{ body: { name: "index.js", type: "file" } }] }]);
+import { Tree } from "./lib/tree.js"
+const tr = Tree.create("list", { name: "" });
+document.body.appendChild(tr.root);
+tr.setcallbackquery((d) => `${d.x}`);
+tr.methodeSync("insert", "", [{
+  body: {
+    name: "abdel kader",
+  },
+  innerTree: [
+    {
+      body: {
+        name: "leila",
+      },
+      innerTree: [
+        {
+          body: {
+            name: "othman"
+          },
+        },
+        {
+          body: {
+            name: "rania"
+          }
+        }
+      ]
+    },
+    {
+      body: {
+        name: "aymen",
+      }
+    },
+    {
+      body: {
+        name: "abdel allah",
+      },
+    },
+    {
+      body: {
+        name: "ilyes",
+      }
+    }
+  ]
+}])

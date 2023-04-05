@@ -29,7 +29,18 @@ input {
 a {
   text-decoration: none;
 }
+*:focus {
+  outline: 1px solid #161616;
+  outline-offset: -1px;
+}
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
 // local
+%shadow {
+  box-shadow: 0px 0px 15px 4px #8884;
+}
 [role="row"],
 [role="treeitem"] {
   display: flex;
@@ -37,11 +48,14 @@ a {
   align-items: stretch;
   user-select: none;
   cursor: pointer;
-  &:not(:last-child) {
-    margin-bottom: 3px;
-  }
   &:active {
     opacity: 0.9;
+  }
+  &:hover {
+    background-color: #8882;
+  }
+  &[aria-selected="true"] {
+    background-color: #37f3;
   }
   [role="content"] {
     width: 100%;
@@ -64,9 +78,55 @@ a {
     }
   }
 }
-[aria-selected="true"] {
-  background-color: #367;
-  color: #ffffff;
+[role="tree"] {
+  > [role="treegrid"] {
+    &[aria-selected="true"] {
+      background-color: #37f3;
+    }
+  }
+}
+[role="notifications"] {
+  @extend %shadow;
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  overflow-y: auto;
+  max-height: 300px;
+  backdrop-filter: blur(4px);
+  [role="notification"] {
+    box-shadow: 0px 0px;
+    width: 400px;
+    [role="title-notification"] {
+      font-weight: bold;
+      padding: 4px 10px;
+    }
+    [role="content-notification"] {
+      font-weight: lighter;
+      max-height: 100px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0px 10px;
+      font-size: small;
+      line-height: 20px;
+    }
+    [role="listbox"] {
+      padding: 4px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+      span {
+        cursor: pointer;
+        padding: 8px 14px;
+        border-radius: 4px;
+        background-color: #8882;
+        &[aria-selected="true"] {
+          background-color: #4399e9;
+          color: white;
+        }
+      }
+    }
+  }
 }
 @for $i from 0 to 20 {
   [aria-level="#{$i}"] {
