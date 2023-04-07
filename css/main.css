@@ -1,3 +1,7 @@
+:root {
+  --header-window-height: 40px;
+}
+
 * {
   padding: 0px;
   margin: 0px;
@@ -5,38 +9,9 @@
 }
 
 body {
-  min-height: 100vh;
-  background-color: #eee;
-  color: #222;
-  font-family: tahoma, arial, sans-serif;
-}
-
-button,
-input,
-textarea {
-  outline: none;
-  border: none;
-  padding: 5px;
-  color: inherit;
-  background-color: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-}
-
-a {
-  text-decoration: none;
-}
-
-*:focus {
-  outline: 1px solid #161616;
-  outline-offset: -1px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #151515;
+  background-color: #efefef;
 }
 
 ::-webkit-scrollbar {
@@ -44,184 +19,177 @@ a {
   height: 0px;
 }
 
-[role=notifications] {
-  box-shadow: 0px 0px 15px 4px rgba(136, 136, 136, 0.2666666667);
+input,
+button,
+textarea {
+  outline: none;
+  border: none;
+  background-color: inherit;
+  padding: 10px 17px;
 }
 
-[role=row],
-[role=treeitem] {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+*:focus {
+  outline: 1px solid rgba(28, 141, 161, 0.4235294118);
+}
+
+input {
+  width: 100%;
+}
+
+button:hover {
   cursor: pointer;
 }
-[role=row]:active,
-[role=treeitem]:active {
-  opacity: 0.9;
+
+a {
+  text-decoration: none;
 }
-[role=row]:hover,
-[role=treeitem]:hover {
-  background-color: rgba(136, 136, 136, 0.1333333333);
+
+.shadow, [role=application] .clients .client-infos .searcher-products .table-of-finded-products, [role=application] .clients .clients-tabs, .header-bar-window {
+  box-shadow: 0px 7px 12px 5px rgba(0, 0, 0, 0.2);
 }
-[role=row][aria-selected=true],
-[role=treeitem][aria-selected=true] {
-  background-color: rgba(51, 119, 255, 0.2);
-}
-[role=row] [role=content],
-[role=treeitem] [role=content] {
-  width: 100%;
+
+.center-inner, .header-bar-window .window-controls ul li {
   display: flex;
-  justify-content: space-between;
-  padding: 5px;
+  justify-content: center;
   align-items: center;
 }
-[role=row] [role=content] [role=column],
-[role=treeitem] [role=content] [role=column] {
-  width: 100%;
-}
-[role=row] > [role=level],
-[role=treeitem] > [role=level] {
-  position: relative;
-}
-[role=row] > [role=level] > [role=icon],
-[role=treeitem] > [role=level] > [role=icon] {
-  display: inline-block;
-  position: absolute;
-  right: 0px;
-  top: 50%;
-  transform: translateY(-50%);
-}
 
-[role=tree] > [role=treegrid][aria-selected=true] {
-  position: relative;
-}
-[role=tree] > [role=treegrid][aria-selected=true] > [role=treeitem] {
-  background-color: rgba(51, 119, 255, 0.2);
-}
-
-[role=notifications] {
-  position: fixed;
-  right: 10px;
-  bottom: 10px;
-  overflow-y: auto;
-  max-height: 300px;
-  -webkit-backdrop-filter: blur(4px);
-          backdrop-filter: blur(4px);
-}
-[role=notifications] [role=notification] {
-  box-shadow: 0px 0px;
-  width: 400px;
-}
-[role=notifications] [role=notification] [role=title-notification] {
-  font-weight: bold;
-  padding: 4px 10px;
-}
-[role=notifications] [role=notification] [role=content-notification] {
+ul[role=toolbar] {
   font-weight: lighter;
-  max-height: 100px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0px 10px;
-  font-size: small;
-  line-height: 20px;
 }
-[role=notifications] [role=notification] [role=listbox] {
-  padding: 4px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 4px;
-}
-[role=notifications] [role=notification] [role=listbox] span {
+ul[role=toolbar] li {
   cursor: pointer;
-  padding: 8px 14px;
-  border-radius: 4px;
-  background-color: rgba(136, 136, 136, 0.1333333333);
 }
-[role=notifications] [role=notification] [role=listbox] span[aria-selected=true] {
-  background-color: #4399e9;
+
+.header-bar-window {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  display: flex;
+  height: var(--header-window-height);
+  background-color: rgba(136, 136, 136, 0.2);
+  z-index: 10000;
+}
+.header-bar-window .dragspace {
+  width: 100%;
+  height: 100%;
+}
+.header-bar-window .window-controls ul {
+  display: inline-flex;
+  list-style: none;
+}
+.header-bar-window .window-controls ul li {
+  width: calc(var(--header-window-height) + 5px);
+  height: var(--header-window-height);
+}
+.header-bar-window .window-controls ul li[aria-label=close]:hover {
+  background-color: #d83838;
   color: white;
 }
 
-[aria-level="0"] > [role=level] {
-  width: 30px;
+[role=application] {
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  top: var(--header-window-height);
+}
+[role=application] .clients {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 10px;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+}
+[role=application] .clients .clients-tabs {
+  height: 100%;
+  width: 250px;
+  background-color: rgba(136, 136, 136, 0.2);
+  z-index: 100;
+}
+[role=application] .clients .clients-tabs [role=table] {
+  overflow-y: auto;
+  height: 100%;
+  width: 100%;
+}
+[role=application] .clients .client-infos {
+  width: 100%;
+}
+[role=application] .clients .client-infos .total-price h1 {
+  font-size: 70px;
+  font-weight: lighter;
+  font-family: serif;
+  text-align: center;
+  padding: 20px;
+}
+[role=application] .clients .client-infos .searcher-products {
+  position: relative;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products {
+  padding: 5px;
+  border-radius: 10px;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 10px;
+  width: 400px;
+  background-color: #efefef;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] {
+  cursor: pointer;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] [role=content] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] [role=content] [role=column] {
+  width: 100%;
+  padding: 3px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] {
+  max-height: 200px;
+  overflow-y: auto;
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] [role=row]:hover {
+  background-color: rgba(136, 136, 136, 0.0666666667);
+}
+[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] [role=row][aria-selected=true] {
+  background-color: rgba(28, 141, 161, 0.4235294118);
+}
+[role=application] .clients .client-infos .products-get-client [role=row] [role=content] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+[role=application] .clients .client-infos .products-get-client [role=row] [role=content] [role=column] {
+  width: 100%;
+  padding: 9px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row]:nth-child(odd) {
+  background-color: rgba(136, 136, 136, 0.0666666667);
+}
+[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row]:nth-child(even) {
+  background-color: rgba(136, 136, 136, 0.1333333333);
+}
+[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row][aria-selected=true] {
+  background-color: rgba(28, 141, 161, 0.4235294118);
 }
 
-[aria-level="1"] > [role=level] {
-  width: 45px;
-}
-
-[aria-level="2"] > [role=level] {
-  width: 60px;
-}
-
-[aria-level="3"] > [role=level] {
-  width: 75px;
-}
-
-[aria-level="4"] > [role=level] {
-  width: 90px;
-}
-
-[aria-level="5"] > [role=level] {
-  width: 105px;
-}
-
-[aria-level="6"] > [role=level] {
-  width: 120px;
-}
-
-[aria-level="7"] > [role=level] {
-  width: 135px;
-}
-
-[aria-level="8"] > [role=level] {
-  width: 150px;
-}
-
-[aria-level="9"] > [role=level] {
-  width: 165px;
-}
-
-[aria-level="10"] > [role=level] {
-  width: 180px;
-}
-
-[aria-level="11"] > [role=level] {
-  width: 195px;
-}
-
-[aria-level="12"] > [role=level] {
-  width: 210px;
-}
-
-[aria-level="13"] > [role=level] {
-  width: 225px;
-}
-
-[aria-level="14"] > [role=level] {
-  width: 240px;
-}
-
-[aria-level="15"] > [role=level] {
-  width: 255px;
-}
-
-[aria-level="16"] > [role=level] {
-  width: 270px;
-}
-
-[aria-level="17"] > [role=level] {
-  width: 285px;
-}
-
-[aria-level="18"] > [role=level] {
-  width: 300px;
-}
-
-[aria-level="19"] > [role=level] {
-  width: 315px;
+#products-input-search {
+  background-color: rgba(136, 136, 136, 0.2);
 }/*# sourceMappingURL=main.css.map */

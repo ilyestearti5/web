@@ -62,16 +62,16 @@ export interface allKeyboardKeys {
   PrintScreen: number;
   Insert: number;
   Delete: number;
-  Digit0: number;
-  Digit1: number;
-  Digit2: number;
-  Digit3: number;
-  Digit4: number;
-  Digit5: number;
-  Digit6: number;
-  Digit7: number;
-  Digit8: number;
-  Digit9: number;
+  0: number;
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+  6: number;
+  7: number;
+  8: number;
+  9: number;
   A: number;
   B: number;
   C: number;
@@ -153,7 +153,7 @@ export interface shortcutConfigurationsList {
     paste: KeyboardShortcut;
     cut: KeyboardShortcut;
   };
-  selection: directionShortcut;
+  selection: directionShortcut & { all: KeyboardShortcut };
   move: directionShortcut;
   status: {
     submit: KeyboardShortcut;
@@ -214,6 +214,7 @@ export type submitListener = (
 ) => void;
 export type submitTypePress = "call" | "keypress" | "click";
 export type SortedBy = "down" | "up";
+export type shortcutActivation = "down" | "up" | "press";
 export type callBackQuery<T> = (data: T, index: number) => string;
 // classes projects
 export class Delay {
@@ -272,16 +273,16 @@ export class KeyboardShortcut {
     PrintScreen: 44,
     Insert: 45,
     Delete: 46,
-    Digit0: 48,
-    Digit1: 49,
-    Digit2: 50,
-    Digit3: 51,
-    Digit4: 52,
-    Digit5: 53,
-    Digit6: 54,
-    Digit7: 55,
-    Digit8: 56,
-    Digit9: 57,
+    0: 48,
+    1: 49,
+    2: 50,
+    3: 51,
+    4: 52,
+    5: 53,
+    6: 54,
+    7: 55,
+    8: 56,
+    9: 57,
     A: 65,
     B: 66,
     C: 67,
@@ -379,16 +380,16 @@ export class KeyboardShortcut {
       PrintScreen: 44,
       Insert: 45,
       Delete: 46,
-      Digit0: 48,
-      Digit1: 49,
-      Digit2: 50,
-      Digit3: 51,
-      Digit4: 52,
-      Digit5: 53,
-      Digit6: 54,
-      Digit7: 55,
-      Digit8: 56,
-      Digit9: 57,
+      0: 48,
+      1: 49,
+      2: 50,
+      3: 51,
+      4: 52,
+      5: 53,
+      6: 54,
+      7: 55,
+      8: 56,
+      9: 57,
       A: 65,
       B: 66,
       C: 67,
@@ -744,18 +745,15 @@ export class KeyboardShortcut {
     return true;
   }
   on(
-    event: "down" | "up" | "press",
+    event: shortcutActivation,
     listener: listenerKeyboardShortcut
   ): KeyboardShortcut {
     return this[`on${event}`](listener);
   }
-  off(
-    event: "down" | "up" | "press",
-    listener: listenerKeyboardShortcut
-  ): boolean {
+  off(event: shortcutActivation, listener: listenerKeyboardShortcut): boolean {
     return this[`off${event}`](listener);
   }
-  clear(when: "down" | "up" | "press") {
+  clear(when: shortcutActivation) {
     if (when == "down") this.#on_down_fn = [];
     else if (when == "up") this.#on_up_fn = [];
     else if (when == "press") this.#on_press_fn = [];
@@ -1010,15 +1008,19 @@ export class ListBox {
           `${this.title} - forword selection`,
           `Shift${KeyboardShortcut.separatorShortcuts}ArrowDown`,
           [this.root]
-        ).ondown(() => {
-          this.forwordSelection(1);
-        }),
+        ).ondown(() => this.forwordSelection(1)),
         backword: KeyboardShortcut.create(
           `${this.title} - backword selection`,
           `Shift${KeyboardShortcut.separatorShortcuts}ArrowUp`,
           [this.root]
-        ).ondown(() => {
-          this.backwordSelection(1);
+        ).ondown(() => this.backwordSelection(1)),
+        all: KeyboardShortcut.create(
+          `${this.title} - all selection`,
+          `Ctrl${KeyboardShortcut.separatorShortcuts}A`,
+          [this.root]
+        ).ondown((comb, kyb) => {
+          kyb && kyb.preventDefault();
+          this.select(...this.EFFECTIVE_ELEMENTS);
         }),
       },
       find: null,
@@ -1043,9 +1045,7 @@ export class ListBox {
       status: {
         submit: KeyboardShortcut.create(`${this.title} - submit`, `Enter`, [
           this.root,
-        ]).ondown(() => {
-          this.submit("keypress", this.ELEMENT_DIRECTION!);
-        }),
+        ]).ondown(() => this.submit("keypress", this.ELEMENT_DIRECTION!)),
         cancel: KeyboardShortcut.create(`${this.title} - cancel`, "Escape", [
           this.root,
         ]).ondown(() => this.select()),
@@ -1300,6 +1300,7 @@ export class ListBox {
     this.shortcuts.move.backword.targets = targets;
     this.shortcuts.selection.forword.targets = targets;
     this.shortcuts.selection.backword.targets = targets;
+    this.shortcuts.selection.all.targets = targets;
     this.shortcuts.status.submit.targets = targets;
     this.shortcuts.status.cancel.targets = targets;
   }
@@ -1367,6 +1368,10 @@ export class Iterations<T> extends ListBox {
           next = next.nextElementSibling;
         }
         next && this.select(next as HTMLElement);
+        next &&
+          this.configurations.scrolling &&
+          !isLooked(next as HTMLElement) &&
+          this.scroll("forword");
       }),
       backword: KeyboardShortcut.create(
         `${this.title} find - backword - `,
@@ -1390,6 +1395,10 @@ export class Iterations<T> extends ListBox {
           prev = prev.previousElementSibling;
         }
         prev && this.select(prev as HTMLElement);
+        prev &&
+          this.configurations.scrolling &&
+          !isLooked(prev as HTMLElement) &&
+          this.scroll("backword");
       }),
     };
   }
@@ -1509,37 +1518,63 @@ export class Table<T> extends Iterations<T> {
     return this.SELECTD_ELEMENTS.map((element) => this.readrow(element));
   }
   protected appendSync(data: T[]) {
-    data.forEach((input) => this.root.appendChild(this.createrow(input)));
+    return data.map((input) => {
+      var row = this.createrow(input);
+      this.root.appendChild(row);
+      return this.readrow(row);
+    });
   }
   protected async append(
     data: T[],
     timeout: number | ((value: T, index: number) => number),
     limit: number
   ) {
+    var result: (T & row)[] = [];
     await forEachAsync(
       data,
-      (input) => this.root.appendChild(this.createrow(input)),
+      (input) => {
+        var row = this.createrow(input);
+        this.root.appendChild(row);
+        result.push(this.readrow(row));
+      },
       timeout,
       limit
     );
+    return result;
   }
   protected prependSync(data: T[]) {
-    data.forEach((input) => this.root.prepend(this.createrow(input)));
+    return data.map((input) => {
+      var row = this.createrow(input);
+      this.root.prepend(row);
+      return this.readrow(row);
+    });
   }
   protected async prepend(
     data: T[],
     timeout: number | ((value: T, index: number) => number),
     limit: number
   ) {
+    var result: (T & row)[] = [];
     await forEachAsync(
       data,
-      (input) => this.root.prepend(this.createrow(input)),
+      (input) => {
+        var row = this.createrow(input);
+        this.root.appendChild(row);
+        result.push(this.readrow(row));
+      },
       timeout,
       limit
     );
+    return result;
   }
   protected afterSync(element: HTMLElement, data: T[]) {
-    data.reverse().forEach((input) => element.after(this.createrow(input)));
+    var result: (T & row)[] = [];
+    data.reverse().forEach((input) => {
+      const row = this.createrow(input);
+      element.after(row);
+      result.unshift(this.readrow(row));
+    });
+    return result;
   }
   protected async after(
     element: HTMLElement,
@@ -1547,15 +1582,25 @@ export class Table<T> extends Iterations<T> {
     timeout: number | ((value: T, index: number) => number),
     limit: number
   ) {
+    var result: (T & row)[] = [];
     await forEachAsync(
       data.reverse(),
-      (input) => element.after(this.createrow(input)),
+      (input) => {
+        const row = this.createrow(input);
+        element.after(row);
+        result.unshift(this.readrow(row));
+      },
       timeout,
       limit
     );
+    return result;
   }
   protected beforeSync(element: HTMLElement, data: T[]) {
-    data.forEach((input) => element.before(this.createrow(input)));
+    return data.map((input) => {
+      const row = this.createrow(input);
+      element.before(row);
+      return this.readrow(row);
+    });
   }
   protected async before(
     element: HTMLElement,
@@ -1563,12 +1608,18 @@ export class Table<T> extends Iterations<T> {
     timeout: number | ((value: T, index: number) => number),
     limit: number
   ) {
+    var result: (T & row)[] = [];
     await forEachAsync(
       data,
-      (input) => element.before(this.createrow(input)),
+      (input) => {
+        const row = this.createrow(input);
+        element.before(row);
+        result.push(this.readrow(row));
+      },
       timeout,
       limit
     );
+    return result;
   }
   override async copy() {
     if (!this.configurations.clipboard) return;
@@ -1667,11 +1718,12 @@ export class Table<T> extends Iterations<T> {
   ) {
     this.throwLoading();
     this.isloading = true;
+    var result: (T & row)[] = [];
     switch (methode) {
       case "after": {
       }
       case "before": {
-        await this[methode as "after" | "before"](
+        result = await this[methode as "after" | "before"](
           element,
           input as methodesTableMap<T>["after"],
           timeout,
@@ -1682,7 +1734,7 @@ export class Table<T> extends Iterations<T> {
       case "prepend": {
       }
       case "append": {
-        await this[methode as "prepend" | "append"](
+        result = await this[methode as "prepend" | "append"](
           input as methodesTableMap<T>["append"],
           timeout,
           limit
@@ -1695,19 +1747,21 @@ export class Table<T> extends Iterations<T> {
       }
     }
     this.isloading = false;
+    return result;
   }
-  async methodeSync<R extends keyof methodesTableMap<T>>(
+  methodeSync<R extends keyof methodesTableMap<T>>(
     methode: R,
     input: methodesTableMap<T>[R],
     element: HTMLElement
   ) {
     this.throwLoading();
     this.isloading = true;
+    var result: (T & row)[] = [];
     switch (methode) {
       case "after": {
       }
       case "before": {
-        this[`${methode as "after" | "before"}Sync`](
+        result = this[`${methode as "after" | "before"}Sync`](
           element,
           input as methodesTableMap<T>["after"]
         );
@@ -1716,7 +1770,7 @@ export class Table<T> extends Iterations<T> {
       case "prepend": {
       }
       case "append": {
-        this[`${methode as "prepend" | "append"}Sync`](
+        result = this[`${methode as "prepend" | "append"}Sync`](
           input as methodesTableMap<T>["append"]
         );
         break;
@@ -1727,6 +1781,7 @@ export class Table<T> extends Iterations<T> {
       }
     }
     this.isloading = false;
+    return result;
   }
   static override create<R>(title: string, defaultValue: R): Table<R> {
     return super.create(title, defaultValue) as Table<R>;
@@ -2446,19 +2501,24 @@ export class Graphe {
     this.#origin = v;
     this.#origin && this.#origin.#points.add(this);
   }
-  get relative(): [number, number, number] {
-    var { origin, x, y, r } = this;
-    while (origin) {
-      x += origin.x;
-      y += origin.y;
-      r += origin.r;
-      origin = origin.origin;
+  get absolute(): [number, number] {
+    var origins = [...this.origins.reverse(), this];
+    var x = 0;
+    var y = 0;
+    var some = 0;
+    for (let i = 0; i < origins.length; i++) {
+      var origin = origins[i - 1];
+      var child = origins[i];
+      var d = (child.x ** 2 + child.y ** 2) ** (1 / 2);
+      d = child.x < 0 ? -d : d;
+      if (origin) some += origin.r;
+      var rotation = Math.atan(child.y / child.x);
+      var xAxisRotation = d * Math.cos(some + rotation);
+      var yAxisRotation = d * Math.sin(some + rotation);
+      x += xAxisRotation;
+      y += yAxisRotation;
     }
-    var diff = (x ** 2 + y ** 2) ** (1 / 2);
-    var R = Math.atan(x / y);
-    x = diff * Math.cos(R + r);
-    y = diff * Math.sin(R + r);
-    return [x, y, r];
+    return [x, y];
   }
   get points() {
     return Array.from(this.#points);
@@ -2508,8 +2568,8 @@ export class Graphe {
     context.restore();
   }
   static info(g1: Graphe, g2: Graphe = this.origin) {
-    var [x1, y1] = g1.relative;
-    var [x2, y2] = g2.relative;
+    var [x1, y1] = g1.absolute;
+    var [x2, y2] = g2.absolute;
     var diffX: number = x1 - x2;
     var diffY: number = y1 - y2;
     return {
@@ -2560,11 +2620,11 @@ export class Graphe {
     result.#points = points;
     return result;
   }
-  static get noOrigin() {
+  static get absolutes() {
     return Array.from(this.#all).filter((graphe) => !graphe.#points.size);
   }
   static draw(context: CanvasRenderingContext2D) {
-    this.noOrigin.forEach((graphe) => graphe.draw(context, true));
+    this.absolutes.forEach((graphe) => graphe.draw(context, true));
   }
   get from(): null | Graphe {
     return Graphe.from(this);
@@ -3072,5 +3132,42 @@ export class Tree<T> extends Iterations<T> {
       );
       ele.style.display = display == "none" ? "" : "none";
     }
+  }
+}
+export class Watch {
+  #value: string = "";
+  #nodes: Set<HTMLSpanElement> = new Set();
+  static #all: Watch[] = [];
+  #name: string;
+  constructor(name: string) {
+    this.#name = name;
+    Watch.#all.push(this);
+  }
+  get name() {
+    return this.#name;
+  }
+  get value() {
+    return this.#value;
+  }
+  set value(v: string) {
+    this.#nodes.forEach((ele) => (ele.innerHTML = v));
+    this.#value = v;
+  }
+  enable(element: HTMLElement) {
+    const node = createElement("span", this.#value, {});
+    node.setAttribute(`data-${this.#name}`, this.#value);
+    element.appendChild(node);
+    this.#nodes.add(node);
+    return node;
+  }
+  disable(element: HTMLElement) {
+    var node = Array.from(element.children).find((ele) =>
+      ele.hasAttribute(`data-${this.#name}`)
+    );
+    node?.remove();
+    return node as HTMLElement;
+  }
+  static get all() {
+    return [...this.#all];
   }
 }

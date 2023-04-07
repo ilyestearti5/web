@@ -1,140 +1,203 @@
+:root {
+  --header-window-height: 40px;
+}
 * {
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
 }
-// global
 body {
-  min-height: 100vh;
-  background-color: #eee;
-  color: #222;
-  font-family: tahoma, arial, sans-serif;
-}
-button,
-input,
-textarea {
-  outline: none;
-  border: none;
-  padding: 5px;
-  color: inherit;
-  background-color: inherit;
-}
-button {
-  cursor: pointer;
-}
-input {
-  width: 100%;
-  padding: 10px;
-}
-a {
-  text-decoration: none;
-}
-*:focus {
-  outline: 1px solid #161616;
-  outline-offset: -1px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #151515;
+  background-color: #efefef;
 }
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
 }
-// local
-%shadow {
-  box-shadow: 0px 0px 15px 4px #8884;
+input,
+button,
+textarea {
+  outline: none;
+  border: none;
+  background-color: inherit;
+  padding: 10px 17px;
 }
-[role="row"],
-[role="treeitem"] {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  user-select: none;
+*:focus {
+  outline: 1px solid #1c8da16c;
+}
+input {
+  width: 100%;
+}
+button:hover {
   cursor: pointer;
-  &:active {
-    opacity: 0.9;
-  }
-  &:hover {
-    background-color: #8882;
-  }
-  &[aria-selected="true"] {
-    background-color: #37f3;
-  }
-  [role="content"] {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 5px;
-    align-items: center;
-    [role="column"] {
-      width: 100%;
-    }
-  }
-  > [role="level"] {
-    position: relative;
-    > [role="icon"] {
-      display: inline-block;
-      position: absolute;
-      right: 0px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+}
+a {
+  text-decoration: none;
+}
+.shadow {
+  box-shadow: 0px 7px 12px 5px #00000033;
+}
+.center-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+ul[role="toolbar"] {
+  font-weight: lighter;
+  li {
+    cursor: pointer;
   }
 }
-[role="tree"] {
-  > [role="treegrid"] {
-    &[aria-selected="true"] {
-      position: relative;
-      > [role="treeitem"] {
-        background-color: #37f3;
-      }
-    }
-  }
-}
-[role="notifications"] {
-  @extend %shadow;
+.header-bar-window {
+  @extend .shadow;
   position: fixed;
-  right: 10px;
-  bottom: 10px;
-  overflow-y: auto;
-  max-height: 300px;
-  backdrop-filter: blur(4px);
-  [role="notification"] {
-    box-shadow: 0px 0px;
-    width: 400px;
-    [role="title-notification"] {
-      font-weight: bold;
-      padding: 4px 10px;
-    }
-    [role="content-notification"] {
-      font-weight: lighter;
-      max-height: 100px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 0px 10px;
-      font-size: small;
-      line-height: 20px;
-    }
-    [role="listbox"] {
-      padding: 4px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 4px;
-      span {
-        cursor: pointer;
-        padding: 8px 14px;
-        border-radius: 4px;
-        background-color: #8882;
-        &[aria-selected="true"] {
-          background-color: #4399e9;
-          color: white;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  display: flex;
+  height: var(--header-window-height);
+  background-color: #8883;
+  z-index: 10000;
+  .dragspace {
+    width: 100%;
+    height: 100%;
+  }
+  .window-controls {
+    ul {
+      display: inline-flex;
+      list-style: none;
+      li {
+        width: calc(var(--header-window-height) + 5px);
+        height: var(--header-window-height);
+        @extend .center-inner;
+        &[aria-label="close"] {
+          &:hover {
+            background-color: #d83838;
+            color: white;
+          }
         }
       }
     }
   }
 }
-@for $i from 0 to 20 {
-  [aria-level="#{$i}"] {
-    > [role="level"] {
-      width: 15px * ($i + 2);
+[role="application"] {
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  top: var(--header-window-height);
+  .clients {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 10px;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    gap: 3px;
+    .clients-tabs {
+      @extend .shadow;
+      height: 100%;
+      width: 250px;
+      background-color: #8883;
+      [role="table"] {
+        overflow-y: auto;
+        height: 100%;
+        width: 100%;
+      }
+      z-index: 100;
+    }
+    .client-infos {
+      width: 100%;
+      .total-price {
+        h1 {
+          font-size: 70px;
+          font-weight: lighter;
+          font-family: serif;
+          text-align: center;
+          padding: 20px;
+        }
+      }
+      .searcher-products {
+        position: relative;
+        .table-of-finded-products {
+          padding: 5px;
+          border-radius: 10px;
+          @extend .shadow;
+          [role="row"] {
+            cursor: pointer;
+            [role="content"] {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              [role="column"] {
+                width: 100%;
+                padding: 3px 10px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+              }
+            }
+          }
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 10px;
+          width: 400px;
+          background-color: #efefef;
+          [role="table"] {
+            max-height: 200px;
+            overflow-y: auto;
+            [role="row"] {
+              &:hover {
+                background-color: #8881;
+              }
+              &[aria-selected="true"] {
+                background-color: #1c8da16c;
+              }
+            }
+          }
+        }
+      }
+      .products-get-client {
+        [role="row"] {
+          [role="content"] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            [role="column"] {
+              width: 100%;
+              padding: 9px;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            }
+          }
+        }
+        .title-table-products {
+        }
+        .table-of-products {
+          [role="table"] {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+            [role="row"] {
+              &:nth-child(odd) {
+                background-color: #8881;
+              }
+              &:nth-child(even) {
+                background-color: #8882;
+              }
+              &[aria-selected="true"] {
+                background-color: #1c8da16c;
+              }
+            }
+          }
+        }
+      }
     }
   }
+}
+#products-input-search {
+  background-color: #8883;
 }

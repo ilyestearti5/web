@@ -4,25 +4,60 @@
     <meta charset="UTF-8" />
     <link
       rel="stylesheet"
-      href="./css/main.css"
+      href="../node_modules/material-design-icons/iconfont/material-icons.css"
     />
     <link
       rel="stylesheet"
-      href="../node_modules/material-design-icons/iconfont/material-icons.css"
+      href="./css/main.css"
     />
-    <style>
-      [aria-colindex="true"] {
-        outline: 1px solid #222;
-        outline-offset: -1px;
-      }
-    </style>
-    <title>Desktop App</title>
+    <title>My Super Market Application</title>
   </head>
   <body>
+    <div class="header-bar-window">
+      <div class="dragspace"></div>
+      <div class="window-controls"></div>
+    </div>
+    <div role="application">
+      <div class="clients">
+        <div class="clients-tabs">
+          <div role="table">
+            <div role="row"></div>
+          </div>
+        </div>
+        <div class="client-infos">
+          <div class="total-price">
+            <h1>
+              <span id="total-price-space" class="price">100</span><span data-price-type="$">$</span>
+            </h1>
+          </div>
+          <div
+            role="searchbox"
+            class="searcher-products"
+          >
+            <div class="search-side-input">
+              <input
+                type="text"
+                id="products-input-search"
+                placeholder="id code... write here"
+                role="search"
+              />
+            </div>
+            <div class="table-of-finded-products">
+
+            </div>
+          </div>
+          <div class="products-get-client">
+            <div class="title-table-products"></div>
+            <div class="table-of-products"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script
-      src="./renderer.js"
       defer
       type="module"
+      async
+      src="./renderer.js"
     ></script>
   </body>
 </html>
