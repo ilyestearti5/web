@@ -1,7 +1,3 @@
-:root {
-  --header-window-height: 40px;
-}
-
 * {
   padding: 0px;
   margin: 0px;
@@ -9,187 +5,152 @@
 }
 
 body {
+  min-height: 100vh;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #151515;
-  background-color: #efefef;
-}
-
-::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-}
-
-input,
-button,
-textarea {
-  outline: none;
-  border: none;
-  background-color: inherit;
-  padding: 10px 17px;
-}
-
-*:focus {
-  outline: 1px solid rgba(28, 141, 161, 0.4235294118);
-}
-
-input {
-  width: 100%;
-}
-
-button:hover {
-  cursor: pointer;
-}
-
-a {
-  text-decoration: none;
-}
-
-.shadow, [role=application] .clients .client-infos .searcher-products .table-of-finded-products, [role=application] .clients .clients-tabs, .header-bar-window {
-  box-shadow: 0px 7px 12px 5px rgba(0, 0, 0, 0.2);
-}
-
-.center-inner, .header-bar-window .window-controls ul li {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-ul[role=toolbar] {
-  font-weight: lighter;
-}
-ul[role=toolbar] li {
-  cursor: pointer;
-}
-
-.header-bar-window {
-  position: fixed;
-  left: 0px;
-  top: 0px;
-  right: 0px;
-  display: flex;
-  height: var(--header-window-height);
-  background-color: rgba(136, 136, 136, 0.2);
-  z-index: 10000;
-}
-.header-bar-window .dragspace {
-  width: 100%;
-  height: 100%;
-}
-.header-bar-window .window-controls ul {
-  display: inline-flex;
-  list-style: none;
-}
-.header-bar-window .window-controls ul li {
-  width: calc(var(--header-window-height) + 5px);
-  height: var(--header-window-height);
-}
-.header-bar-window .window-controls ul li[aria-label=close]:hover {
-  background-color: #d83838;
+  background-color: #151515;
   color: white;
 }
 
-[role=application] {
-  position: fixed;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
-  top: var(--header-window-height);
-}
-[role=application] .clients {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 10px;
-  height: 100%;
-  display: flex;
-  align-items: stretch;
-  gap: 3px;
-}
-[role=application] .clients .clients-tabs {
-  height: 100%;
-  width: 250px;
-  background-color: rgba(136, 136, 136, 0.2);
-  z-index: 100;
-}
-[role=application] .clients .clients-tabs [role=table] {
-  overflow-y: auto;
-  height: 100%;
-  width: 100%;
-}
-[role=application] .clients .client-infos {
-  width: 100%;
-}
-[role=application] .clients .client-infos .total-price h1 {
-  font-size: 70px;
-  font-weight: lighter;
-  font-family: serif;
-  text-align: center;
-  padding: 20px;
-}
-[role=application] .clients .client-infos .searcher-products {
-  position: relative;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products {
-  padding: 5px;
-  border-radius: 10px;
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 10px;
-  width: 400px;
-  background-color: #efefef;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] {
-  cursor: pointer;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] [role=content] {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=row] [role=content] [role=column] {
-  width: 100%;
-  padding: 3px 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] {
-  max-height: 200px;
-  overflow-y: auto;
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] [role=row]:hover {
-  background-color: rgba(136, 136, 136, 0.0666666667);
-}
-[role=application] .clients .client-infos .searcher-products .table-of-finded-products [role=table] [role=row][aria-selected=true] {
-  background-color: rgba(28, 141, 161, 0.4235294118);
-}
-[role=application] .clients .client-infos .products-get-client [role=row] [role=content] {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-[role=application] .clients .client-infos .products-get-client [role=row] [role=content] [role=column] {
-  width: 100%;
-  padding: 9px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] {
-  max-height: calc(100vh - 300px);
-  overflow-y: auto;
-}
-[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row]:nth-child(odd) {
-  background-color: rgba(136, 136, 136, 0.0666666667);
-}
-[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row]:nth-child(even) {
-  background-color: rgba(136, 136, 136, 0.1333333333);
-}
-[role=application] .clients .client-infos .products-get-client .table-of-products [role=table] [role=row][aria-selected=true] {
-  background-color: rgba(28, 141, 161, 0.4235294118);
+*:focus-visible {
+  outline: 0px;
+  border: none;
 }
 
-#products-input-search {
-  background-color: rgba(136, 136, 136, 0.2);
+[role=tree],
+[role=listbox],
+[role=treelinear] {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+.flex, [role=row] [role=content],
+[role=treelinear] [role=treeitem] [role=content], [role=row],
+[role=treelinear] [role=treeitem] {
+  display: flex;
+  align-items: center;
+}
+
+.center-flex, [role=icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.selected, [role=treegrid][aria-selected=true] > [role=treeitem] [role=content], [role=row][aria-selected=true],
+[role=treelinear] [role=treeitem][aria-selected=true] {
+  background-color: rgba(35, 139, 199, 0.768627451);
+}
+
+[role=row],
+[role=treelinear] [role=treeitem] {
+  cursor: pointer;
+}
+[role=row] [role=content] [role=column],
+[role=treelinear] [role=treeitem] [role=content] [role=column] {
+  padding: 4px;
+}
+[role=icon] {
+  cursor: pointer;
+}
+
+[role=treeitem][aria-level="0"] [role=level] {
+  width: 25px;
+}
+[role=treeitem][aria-level="1"] [role=level] {
+  width: 35px;
+}
+[role=treeitem][aria-level="2"] [role=level] {
+  width: 45px;
+}
+[role=treeitem][aria-level="3"] [role=level] {
+  width: 55px;
+}
+[role=treeitem][aria-level="4"] [role=level] {
+  width: 65px;
+}
+[role=treeitem][aria-level="5"] [role=level] {
+  width: 75px;
+}
+[role=treeitem][aria-level="6"] [role=level] {
+  width: 85px;
+}
+[role=treeitem][aria-level="7"] [role=level] {
+  width: 95px;
+}
+[role=treeitem][aria-level="8"] [role=level] {
+  width: 105px;
+}
+[role=treeitem][aria-level="9"] [role=level] {
+  width: 115px;
+}
+[role=treeitem][aria-level="10"] [role=level] {
+  width: 125px;
+}
+[role=treeitem][aria-level="11"] [role=level] {
+  width: 135px;
+}
+[role=treeitem][aria-level="12"] [role=level] {
+  width: 145px;
+}
+[role=treeitem][aria-level="13"] [role=level] {
+  width: 155px;
+}
+[role=treeitem][aria-level="14"] [role=level] {
+  width: 165px;
+}
+[role=treeitem][aria-level="15"] [role=level] {
+  width: 175px;
+}
+[role=treeitem][aria-level="16"] [role=level] {
+  width: 185px;
+}
+[role=treeitem][aria-level="17"] [role=level] {
+  width: 195px;
+}
+[role=treeitem][aria-level="18"] [role=level] {
+  width: 205px;
+}
+[role=treeitem][aria-level="19"] [role=level] {
+  width: 215px;
+}
+[role=treeitem][aria-level="20"] [role=level] {
+  width: 225px;
+}
+[role=treeitem] [role=level] {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+[role=tree] [role=treeitem] {
+  padding: 5px 10px;
+}
+[role=tree] [role=treeitem] [role=content] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+[role=tree]:not([aria-label]) {
+  position: absolute;
+  left: 100%;
+  top: 0px;
+  background-color: #191919;
+  border-radius: 4px;
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.1333333333);
+  width: 200px;
+}
+[role=tree][aria-label] {
+  position: relative;
+  width: 0px;
+}
+[role=tree] [role=treegrid] {
+  position: relative;
 }/*# sourceMappingURL=main.css.map */

@@ -1,5 +1,7 @@
-import { Delay } from "./index.js";
 // functions
+
+import { Delay } from "./delay";
+
 // async function
 export async function forEachAsync<T>(
   array: T[],
