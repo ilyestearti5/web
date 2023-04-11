@@ -1,12 +1,12 @@
-import { KeyboardShortcut } from "./keyboardshortcuts";
+import { KeyboardShortcut } from "./keyboardshortcuts.js";
 import {
   direction,
   shortcutConfigurationsList,
   configListBox,
   submitListener,
   submitTypePress,
-} from "./types";
-import { isLooked, scrollToElement } from "./utils";
+} from "./types.js";
+import { isLooked, scrollToElement } from "./utils.js";
 
 export class ListBox {
   // title of listbox is unique

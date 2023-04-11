@@ -6,7 +6,7 @@ import {
   propertyShortcut,
   shortcutActivation,
   whenShortcutOn,
-} from "./types";
+} from "./types.js";
 
 export class KeyboardShortcut {
   // private options

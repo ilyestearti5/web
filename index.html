@@ -4,13 +4,19 @@
     <meta charset="UTF-8" />
     <link
       rel="stylesheet"
-      href="./css/main.css"
+      href="./../node_modules/material-design-icons/iconfont/material-icons.css"
     />
-    <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
+    <title>Desktop App</title>
     <style>
-      [aria-atomic="true"] {
-        outline: 2px solid #17f;
-        outline-offset: -2px;
+      [aria-selected="true"] {
+        background-color: #37f3;
+      }
+      [role="treeitem"] {
+        display: flex;
+        align-items: center;
+      }
+      [role="treeitem"] > [role="level"] {
+        cursor: pointer;
       }
     </style>
   </head>
@@ -18,8 +24,8 @@
     <script
       src="./renderer.js"
       defer
-      type="module"
       async
+      type="module"
     ></script>
   </body>
 </html>

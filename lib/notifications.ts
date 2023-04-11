@@ -1,6 +1,6 @@
-import { ListBox } from "./listbox";
-import { submitListener } from "./types";
-import { createElement } from "./utils";
+import { ListBox } from "./listbox.js";
+import { submitListener } from "./types.js";
+import { createElement } from "./utils.js";
 
 export class Notifications<T> {
     static mainNotificationElement = createElement("div", "", {

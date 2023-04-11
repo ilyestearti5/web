@@ -1,6 +1,6 @@
-import { ListBox } from "./listbox";
-import { configurationToolBar } from "./types";
-import { createElement } from "./utils";
+import { ListBox } from "./listbox.js";
+import { configurationToolBar } from "./types.js";
+import { createElement } from "./utils.js";
 
 export class ToolBar<T> extends ListBox {
     #types: (keyof T)[] = [];

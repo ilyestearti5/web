@@ -1,8 +1,7 @@
 import { KeyboardShortcut } from "./keyboardshortcuts.js";
 import { ListBox } from "./listbox.js";
-import { row } from "./types";
-import { createElement, defaultObject, isLooked } from "./utils";
-
+import { row } from "./types.js";
+import { createElement, defaultObject, isLooked } from "./utils.js";
 export class Iterations<T> extends ListBox {
   public isloading: boolean = false;
   #hiddenPropertys: (keyof T)[] = [];
@@ -30,7 +29,7 @@ export class Iterations<T> extends ListBox {
         `Ctrl${KeyboardShortcut.separatorShortcuts}V`,
         [this.root]
       ).ondown(async () => {
-        this.configurations.clipboard && (await this.paste());
+        this.configurations.clipboard && (await this.paste(2, 5));
       }),
       cut: KeyboardShortcut.create(
         `${this.title} cut`,
@@ -113,7 +112,7 @@ export class Iterations<T> extends ListBox {
     var levelElement = createElement("div", "", { role: "level" });
     result.appendChild(levelElement);
     var contentElement = createElement("div", "", { role: "content" });
-    this.propertys.forEach((prop, index) => {
+    this.propertys.forEach((prop) => {
       var columnElement = createElement("div", `${input[prop]}`, {
         role: "column",
       });
@@ -163,7 +162,9 @@ export class Iterations<T> extends ListBox {
   line() {}
   async copy() {}
   async cut() {}
-  async paste() {}
+  async paste(timeout: number, limit: number): Promise<(T & row)[]> {
+    return [];
+  }
   json(element: HTMLElement): T {
     var o: T = Object.create(null);
     var columns = this.columns(element);

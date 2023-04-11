@@ -1,5 +1,5 @@
-import { Iterations } from "./iterations";
-import { KeyboardShortcut } from "./keyboardshortcuts";
+import { Iterations } from "./iterations.js";
+import { KeyboardShortcut } from "./keyboardshortcuts.js";
 import {
   subtreePropertys,
   callBackQuery,
@@ -8,9 +8,8 @@ import {
   submitTypePress,
   tree,
   methodesTreeMap,
-} from "./types";
-import { createElement } from "./utils";
-
+} from "./types.js";
+import { createElement } from "./utils.js";
 export class Tree<T> extends Iterations<T> {
   #subtreepropertys: subtreePropertys<T>[] = [];
   #callbackquery: callBackQuery<T & row> = (d, i) => `${i}`;
