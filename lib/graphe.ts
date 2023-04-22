@@ -2,15 +2,7 @@ export class Graphe {
   static #all: Set<Graphe> = new Set();
   #points: Set<Graphe> = new Set();
   #origin: Graphe | null = null;
-  constructor(
-    public x: number = 0,
-    public y: number = 0,
-    public rotation: number = 0,
-    public form: "circle" | "rect" = "circle",
-    public type: "fill" | "stroke" = "stroke",
-    public width: number = 30,
-    public height: number = 30
-  ) {
+  constructor(public x: number = 0, public y: number = 0, public rotation: number = 0, public form: 'circle' | 'rect' = 'circle', public type: 'fill' | 'stroke' = 'stroke', public width: number = 30, public height: number = 30) {
     Graphe.#all.add(this);
   }
   set origin(v) {
@@ -31,7 +23,7 @@ export class Graphe {
     var x = 0;
     var y = 0;
     var some = 0;
-    [...this.origins, this].forEach((graphe) => {
+    [...this.origins, this].forEach(graphe => {
       const { origin } = graphe;
       var d = (graphe.x ** 2 + graphe.y ** 2) ** (1 / 2);
       d = graphe.x < 0 ? -d : d;
@@ -59,16 +51,9 @@ export class Graphe {
   draw(context: CanvasRenderingContext2D) {
     var [x, y] = this.absolute;
     context.beginPath();
-    if (this.form == "circle")
-      context.ellipse(x, y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
-    else
-      context.rect(
-        x + this.width / 2,
-        y + this.height / 2,
-        this.width,
-        this.height
-      );
-    context[`${this.type}Style`] = "red";
+    if (this.form == 'circle') context.ellipse(x, y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+    else context.rect(x + this.width / 2, y + this.height / 2, this.width, this.height);
+    context[`${this.type}Style`] = 'red';
     context[`${this.type}`]();
     context.closePath();
   }
@@ -76,30 +61,13 @@ export class Graphe {
     function recursion(origin: Graphe, X: number, Y: number, some: number = 0) {
       X += origin.x;
       Y += origin.y;
-
       context.beginPath();
-      if (origin.form == "circle")
-        context.ellipse(
-          X,
-          Y,
-          origin.width / 2,
-          origin.height / 2,
-          0,
-          0,
-          Math.PI * 2
-        );
-      else
-        context.rect(
-          X + origin.width / 2,
-          Y + origin.height / 2,
-          origin.width,
-          origin.height
-        );
-      context[`${origin.type}Style`] = "red";
+      if (origin.form == 'circle') context.ellipse(X, Y, origin.width / 2, origin.height / 2, 0, 0, Math.PI * 2);
+      else context.rect(X + origin.width / 2, Y + origin.height / 2, origin.width, origin.height);
+      context[`${origin.type}Style`] = 'red';
       context[`${origin.type}`]();
       context.closePath();
-
-      origin.#points.forEach((graphe) => {
+      origin.#points.forEach(graphe => {
         var d = (graphe.x ** 2 + graphe.y ** 2) ** (1 / 2);
         d = graphe.x < 0 ? -d : d;
         some += origin.rotation;
@@ -109,6 +77,6 @@ export class Graphe {
         recursion(graphe, X + xAxis, Y + yAxis, some);
       });
     }
-    this.origins.forEach((g) => recursion(g, 0, 0, 0));
+    this.origins.forEach(g => recursion(g, 0, 0, 0));
   }
 }

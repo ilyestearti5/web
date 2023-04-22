@@ -8,7 +8,7 @@ export class Delay {
   on(): Promise<void> {
     this.off();
     this.#is_loading = true;
-    return new Promise((rs) => {
+    return new Promise(rs => {
       this.#counter = setTimeout(() => {
         rs();
         this.off();
