@@ -1,24 +1,19 @@
-import { createElement } from './utils.js';
+import { createElement as crt } from './utils.js';
 import { pathOfSwitch } from './types.js';
-import { Table } from './table.js';
+import { Table as Tbl } from './table.js';
 export class Switch {
   #viewElement: HTMLElement;
   #paths: pathOfSwitch[] = [];
-  #links: Table<{ path: string }>;
+  #links: Tbl<{ path: string }>;
   private onfunctionschange: Function[] = [];
-  constructor(
-    public readonly title: string,
-    viewElement: HTMLElement = createElement('div', '', {}),
-  ) {
+  constructor(public readonly title: string, viewElement: HTMLElement = crt('div', '', {})) {
     this.#viewElement = viewElement;
-    this.#links = Table.create(this.title, { path: ' - ' });
+    this.#links = Tbl.create(this.title, { path: ' - ' });
     document.addEventListener('click', ({ target }) => {
       if (!target) return;
       var finded = (target as HTMLElement).closest(`*[path]`) as HTMLElement;
       if (!finded) return;
-      var [switch_title, path_content] = finded
-        .getAttribute('path')!
-        .split(':');
+      var [switch_title, path_content] = finded.getAttribute('path')!.split(':');
       if (switch_title != this.title) return;
       this.set(path_content);
     });
@@ -44,8 +39,7 @@ export class Switch {
     return selected ? selected.ariaValueText : null;
   }
   get(path: string, element: HTMLElement) {
-    if (this.paths.has(path))
-      throw Error('cannot use two path has diffrent element');
+    if (this.paths.has(path)) throw Error('cannot use two path has diffrent element');
     this.#paths.push({ path, element });
     element.ariaCurrent = `false`;
     element.ariaValueText = `${path}`;
@@ -56,11 +50,7 @@ export class Switch {
     if (this.selected == path) return;
     var finded = this.#paths.find(({ path: p }) => path == p);
     if (!finded) {
-      console.warn(
-        Error(
-          `the path '${path}' is not defined tray defined by 'get' methode`,
-        ),
-      );
+      console.warn(Error(`the path '${path}' is not defined tray defined by 'get' methode`));
       return this;
     }
     this.#viewElement.innerHTML = '';
@@ -84,12 +74,12 @@ export class Switch {
     return true;
   }
   static fromElement(element: HTMLElement, title: string = `${element.ariaLabel}`) {
-    if(element.tagName.toLowerCase() != "switch") return null;
+    if (element.tagName.toLowerCase() != 'switch') return null;
     var switchElement = element;
     var result = new Switch(title);
     var cases = Array.from(switchElement.children) as HTMLElement[];
     cases.forEach(caseElement => {
-      var itemElement = createElement('div', '', {});
+      var itemElement = crt('div', '', {});
       itemElement.append(...Array.from(caseElement.children));
       result.get(`${caseElement.getAttribute('path')}`, itemElement);
     });

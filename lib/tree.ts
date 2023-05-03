@@ -1,14 +1,18 @@
-import { Iterations } from './iterations.js';
+import { Iterations as Itr } from './iterations.js';
 import { KeyboardShortcut as Sh } from './keyboardshortcuts.js';
 import { subtreePropertys, callBackQuery, row, convertionDataTree, submitTypePress, tree, methodesTreeMap, orderBy, timer } from './types.js';
-import { createElement, forEachAsync } from './utils.js';
-export class Tree<T> extends Iterations<T> {
+import { createElement as crt, forEachAsync as each } from './utils.js';
+type visibilityValues = 'open' | 'close';
+type defaultVisibility<T> = visibilityValues | ((input: T) => visibilityValues);
+export class Tree<T> extends Itr<T> {
   #treepropertys: subtreePropertys<T>[] = [];
-  onOpenFunctions: Function[] = [];
-  onCloseFunctions: Function[] = [];
+  protected onOpenFunctions: Function[] = [];
+  protected onCloseFunctions: Function[] = [];
   #callbackQuery: callBackQuery<T & row> = (d, i) => `${i}`;
   #mainTreeElement: HTMLElement;
+  static #trees: Tree<any>[] = [];
   public separator = '/';
+  private defaultVisibility: defaultVisibility<T> = 'open';
   constructor(root: HTMLElement, title: string, propertys: (keyof T)[], defaultValues: T) {
     super(root, title, propertys, defaultValues);
     this.root.setAttribute('role', 'tree');
@@ -84,7 +88,7 @@ export class Tree<T> extends Iterations<T> {
       });
       return result;
     };
-    return fn(this.#mainTreeElement);
+    return fn(this.#mainTreeElement).filter(ele => ele.getAttribute('role') == this.rowname);
   }
   #getItemElement(element: HTMLElement) {
     return Array.from(element.children).find(ele => ele.getAttribute('role') == 'treeitem')! as HTMLElement;
@@ -101,7 +105,7 @@ export class Tree<T> extends Iterations<T> {
   }
   #inner(element: HTMLElement) {
     var innerTree = this.#getInnerTreeElement(element);
-    return innerTree ? (Array.from(innerTree.children) as HTMLElement[]) : [];
+    return innerTree ? (Array.from(innerTree.children).filter(child => child.getAttribute('role') == this.rowname) as HTMLElement[]) : [];
   }
   #outer(element: HTMLElement) {
     var result = (element.parentElement as HTMLElement).closest(`[role="${this.rowname}"]`);
@@ -169,10 +173,12 @@ export class Tree<T> extends Iterations<T> {
   override createRow(input: T): HTMLElement {
     var treeitem = super.createRow(input);
     treeitem.setAttribute('role', 'treeitem');
-    var result = createElement('div', '', { role: this.rowname });
+    var result = crt('div', '', { role: this.rowname });
     result.appendChild(treeitem);
     if (this.isTree(result)) {
-      var subtree = createElement('div', '', { role: 'tree' });
+      var subtree = crt('div', '', { role: 'tree' });
+      var t = typeof this.defaultVisibility == 'function' ? this.defaultVisibility(input) : this.defaultVisibility;
+      if (t == 'close') subtree.style.display = 'none';
       result.appendChild(subtree);
     }
     return result;
@@ -196,7 +202,7 @@ export class Tree<T> extends Iterations<T> {
     this.ITEMS.forEach(element => {
       if (this.isTree(element)) {
         if (!this.#getInnerTreeElement(element)) {
-          var subtree = createElement('div', '', { role: 'tree' });
+          var subtree = crt('div', '', { role: 'tree' });
           element.appendChild(subtree);
         }
       } else {
@@ -206,6 +212,12 @@ export class Tree<T> extends Iterations<T> {
   }
   setCallbackQuery(callback: callBackQuery<T>) {
     this.#callbackQuery = callback;
+  }
+  getDefaultVisibility() {
+    return this.defaultVisibility;
+  }
+  setDefaultVisibility(value: defaultVisibility<T>) {
+    this.defaultVisibility = value;
   }
   protected appendSync(element: HTMLElement, data: T[]) {
     this.throwLoading();
@@ -273,7 +285,7 @@ export class Tree<T> extends Iterations<T> {
     if (!this.isTree(element)) return;
     this.isloading = true;
     var subtreeElement = this.#getInnerTreeElement(element)!;
-    forEachAsync(
+    each(
       data,
       input => {
         const ele = this.createRow(input);
@@ -289,7 +301,7 @@ export class Tree<T> extends Iterations<T> {
     if (!this.isTree(element)) return;
     this.isloading = true;
     var subtreeElement = this.#getInnerTreeElement(element)!;
-    forEachAsync(
+    each(
       data.reverse(),
       input => {
         const ele = this.createRow(input);
@@ -303,7 +315,7 @@ export class Tree<T> extends Iterations<T> {
   protected async before(element: HTMLElement, data: T[], timeout: timer<T>, limit: number) {
     this.throwLoading();
     this.isloading = true;
-    forEachAsync(
+    each(
       data,
       input => {
         const ele = this.createRow(input);
@@ -317,7 +329,7 @@ export class Tree<T> extends Iterations<T> {
   protected async after(element: HTMLElement, data: T[], timeout: timer<T>, limit: number) {
     this.throwLoading();
     this.isloading = true;
-    forEachAsync(
+    each(
       data.reverse(),
       input => {
         const ele = this.createRow(input);
@@ -333,7 +345,7 @@ export class Tree<T> extends Iterations<T> {
     if (!this.isTree(element)) return;
     this.isloading = true;
     var subtreeElement = this.#getInnerTreeElement(element)!;
-    forEachAsync(
+    each(
       data,
       async ({ body, innerTree }) => {
         var row = this.createRow(body);
@@ -351,7 +363,7 @@ export class Tree<T> extends Iterations<T> {
     if (orderby == 'DESC') readyinners.reverse();
     var innerMainElement = this.#getInnerTreeElement(element);
     if (innerMainElement) {
-      await forEachAsync(
+      await each(
         readyinners,
         ele => {
           innerMainElement!.appendChild(ele);
@@ -361,7 +373,7 @@ export class Tree<T> extends Iterations<T> {
       );
     }
     if (deep)
-      await forEachAsync(
+      await each(
         innersElement.filter(ele => this.isTree(ele)),
         async ele => await this.sort(ele, by, orderby, true, timeout, limit),
         timeout,
@@ -436,6 +448,7 @@ export class Tree<T> extends Iterations<T> {
     if (ele && this.isClosed(element)) {
       ele.style.display = '';
       this.#inner(element).forEach(e => this.setEffective(e, true));
+      this.onOpenFunctions.forEach(fn => fn(element));
     }
   }
   close(element: HTMLElement) {
@@ -443,6 +456,7 @@ export class Tree<T> extends Iterations<T> {
     if (ele && this.isOpend(element)) {
       ele.style.display = 'none';
       this.#inner(element).forEach(e => this.setEffective(e, false));
+      this.onCloseFunctions.forEach(fn => fn(element));
     }
   }
   toggle(element: HTMLElement) {
@@ -479,18 +493,21 @@ export class Tree<T> extends Iterations<T> {
     var array = JSON.parse(await navigator.clipboard.readText()) as tree<T>[];
     var div = array.length / selectedElement.length;
     var result: (T & row)[] = [];
-    if (div >= 1 && div == parseInt(`${div}`)) await forEachAsync(selectedElement, () => null, timeout, limit);
-    else if (selectedElement.length) await forEachAsync(selectedElement, () => null, timeout, limit);
+    if (div >= 1 && div == parseInt(`${div}`)) await each(selectedElement, () => null, timeout, limit);
+    else if (selectedElement.length) await each(selectedElement, () => null, timeout, limit);
     // result.push(
     //   ...(await this.insert(this.#mainTreeElement, data, timeout, limit))
     // );
     return result;
+  }
+  static get trees() {
+    return [...this.#trees];
   }
   static override create<T>(title: string, defaultValue: T) {
     var tree = super.create(title, defaultValue);
     return tree as Tree<T>;
   }
   static override title(title: string) {
-    return super.title(title) as Tree<any>;
+    return this.#trees.find(({ title: tlt }) => tlt == title) || null;
   }
 }

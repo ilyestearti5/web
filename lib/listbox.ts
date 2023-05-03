@@ -1,6 +1,6 @@
 import { KeyboardShortcut as Sh } from './keyboardshortcuts.js';
 import { direction, shortcutConfigurationsList, configListBox, submitListener, submitTypePress } from './types.js';
-import { isLooked, scrollToElement } from './utils.js';
+import { isLooked as like, scrollToElement as ste } from './utils.js';
 export class ListBox {
   // title of listbox is unique
   // direction of listbox (forword|backword)
@@ -96,12 +96,12 @@ export class ListBox {
         fullforword: Sh.create(`${this.title}:full forword`, `pagedown`, [this.root], 'key').ondown(() => {
           const max = this.MAX_ELEMENT_EFFCTIVE;
           max ? this.select(max) : this.select();
-          this.configurations.scrolling && !isLooked(max) && this.scroll('forword');
+          this.configurations.scrolling && !like(max) && this.scroll('forword');
         }),
         fullbackword: Sh.create(`${this.title}:full backword`, `pageup`, [this.root], 'key').ondown(() => {
           const min = this.MIN_ELEMENT_EFFECTIVE;
           min ? this.select(min) : this.select();
-          this.configurations.scrolling && !isLooked(min) && this.scroll('backword');
+          this.configurations.scrolling && !like(min) && this.scroll('backword');
         }),
       },
       status: {
@@ -267,7 +267,7 @@ export class ListBox {
     }
     if (ele) {
       this.select(ele);
-      if (this.configurations.scrolling && !isLooked(ele)) scrollToElement(ele, -1);
+      if (this.configurations.scrolling && !like(ele)) ste(ele, -1);
     }
     this.onfunctionsselection.forEach(fn => fn('forword'));
   }
@@ -288,7 +288,7 @@ export class ListBox {
     }
     if (ele) {
       this.select(ele);
-      if (this.configurations.scrolling && !isLooked(ele)) scrollToElement(ele, 0);
+      if (this.configurations.scrolling && !like(ele)) ste(ele, 0);
     }
     this.onfunctionsselection.forEach(fn => fn('backword'));
   }
@@ -352,7 +352,7 @@ export class ListBox {
   }
   scroll(flag: direction = 'forword') {
     var { ELEMENT_DIRECTION: element } = this;
-    if (element && this.configurations.scrolling && !isLooked(element)) scrollToElement(element, flag == 'forword' ? -1 : 0);
+    if (element && this.configurations.scrolling && !like(element)) ste(element, flag == 'forword' ? -1 : 0);
   }
   go(dir: direction = 'forword', count: number = 1) {
     this[dir](count);
@@ -380,7 +380,7 @@ export class ListBox {
     this.shortcuts.status.submit.targets = targets;
     this.shortcuts.status.cancel.targets = targets;
   }
-  static get all() {
+  public static get all() {
     return [...this.#all];
   }
   static title(title: string) {

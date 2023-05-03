@@ -1,12 +1,13 @@
-import { Delay } from './delay.js';
-import { Iterations } from './iterations.js';
+import { Iterations as Itr } from './iterations.js';
 import { row, methodesTableMap, timer, orderBy } from './types.js';
-import { forEachAsync, createElement } from './utils.js';
-export class Table<T> extends Iterations<T> {
+import { forEachAsync as each, createElement as crt } from './utils.js';
+export class Table<T> extends Itr<T> {
+  static #tables: Table<any>[] = [];
   constructor(root: HTMLElement, title: string, propertys: (keyof T)[] = [], defaultValue: T) {
     super(root, title, propertys, defaultValue);
     this.root.setAttribute('role', 'table');
     this.rowname = 'row';
+    Table.#tables.push(this);
   }
   get DATA(): (T & row)[] {
     return this.ITEMS.map(element => this.readRow(element));
@@ -26,7 +27,7 @@ export class Table<T> extends Iterations<T> {
   }
   protected async append(data: T[], timeout: timer<T>, limit: number) {
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data,
       input => {
         var row = this.createRow(input);
@@ -47,7 +48,7 @@ export class Table<T> extends Iterations<T> {
   }
   protected async prepend(data: T[], timeout: timer<T>, limit: number) {
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data,
       input => {
         var row = this.createRow(input);
@@ -70,7 +71,7 @@ export class Table<T> extends Iterations<T> {
   }
   protected async after(element: HTMLElement, data: T[], timeout: timer<T>, limit: number) {
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data.reverse(),
       input => {
         const row = this.createRow(input);
@@ -91,7 +92,7 @@ export class Table<T> extends Iterations<T> {
   }
   protected async before(element: HTMLElement, data: T[], timeout: timer<T>, limit: number) {
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data,
       input => {
         const row = this.createRow(input);
@@ -122,42 +123,30 @@ export class Table<T> extends Iterations<T> {
     var { SELECTD_ELEMENTS: selectedElement, LAST_ELEMENT_SELECT: lastSelectedElement } = this;
     var result: (T & row)[] = [];
     var div = array.length / selectedElement.length;
-    if (div >= 1 && div == parseInt(`${div}`)) forEachAsync(selectedElement, (element, index) => result.push(...this.afterSync(element, array.slice(index * div, (index + 1) * div))), timeout, limit);
-    else if (selectedElement.length) forEachAsync(selectedElement, element => result.push(...this.afterSync(element, array)), timeout, limit);
+    if (div >= 1 && div == parseInt(`${div}`)) each(selectedElement, (element, index) => result.push(...this.afterSync(element, array.slice(index * div, (index + 1) * div))), timeout, limit);
+    else if (selectedElement.length) each(selectedElement, element => result.push(...this.afterSync(element, array)), timeout, limit);
     else result.push(...(await this.append(array, timeout, limit)));
     return result;
   }
   protected sortSync(by: keyof T, to: orderBy = 'DESC') {
-    var allData = this.DATA;
-    for (let i = 0; i < allData.length; i++) {
-      var body = allData[i];
-      var j = i - 1;
-      var prev = body.row.previousElementSibling;
-      while (prev && (to == 'DESC' ? this.readRow(prev as HTMLElement)[by] > body[by] : this.readRow(prev as HTMLElement)[by] < body[by])) {
-        prev = prev.previousElementSibling;
-        allData[j + 1] = allData[j];
-        j--;
-      }
-      !prev ? this.root.prepend(body.row) : prev.after(body.row);
-      allData[j + 1] = body;
-    }
+    this.throwLoading();
+    var allDataSorted = this.DATA.sort((a, b) => (a[by] < b[by] ? 1 : -1));
+    if (to == 'DESC') allDataSorted = allDataSorted.reverse();
+    allDataSorted.forEach(({ row }) => this.root.appendChild(row));
   }
   protected async sort(by: keyof T, to: orderBy = 'DESC', timeout: number, limit: number) {
-    var allData = this.DATA;
-    var dl = new Delay(timeout);
-    for (let i = 0; i < allData.length; i++) {
-      if (!(i % limit)) await dl.on();
-      var body = allData[i];
-      var j = i - 1;
-      var prev = body.row.previousElementSibling;
-      while (prev && (to == 'DESC' ? this.readRow(prev as HTMLElement)[by] > body[by] : this.readRow(prev as HTMLElement)[by] < body[by])) {
-        prev = prev.previousElementSibling;
-        allData[j + 1] = allData[j];
-        j--;
-      }
-      !prev ? this.root.prepend(body.row) : prev.after(body.row);
-      allData[j + 1] = body;
-    }
+    this.throwLoading();
+    this.isloading = true;
+    var allDataSorted = this.DATA.sort((a, b) => (a[by] < b[by] ? 1 : -1));
+    await each(
+      to == 'DESC' ? allDataSorted.reverse() : allDataSorted,
+      ({ row }) => {
+        this.root.appendChild(row);
+      },
+      timeout,
+      limit,
+    );
+    this.isloading = false;
   }
   async methode<R extends keyof methodesTableMap<T>>(methode: R, input: methodesTableMap<T>[R], element: HTMLElement = this.ITEMS[0], timeout: number, limit: number) {
     this.throwLoading();
@@ -209,14 +198,13 @@ export class Table<T> extends Iterations<T> {
     this.isloading = false;
     return result;
   }
-  override line() {
-    var ele = createElement('div', '', { role: 'line' });
-    this.root.appendChild(ele);
-  }
   static override create<R>(title: string, defaultValue: R): Table<R> {
     return super.create(title, defaultValue) as Table<R>;
   }
+  static get tables() {
+    return [...this.#tables];
+  }
   static override title(title: string) {
-    return (this.all.find(({ title: t }) => title == t) as Table<any>) || null;
+    return this.#tables.find(({ title: tlt }) => tlt == title) || null;
   }
 }

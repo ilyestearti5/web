@@ -1,4 +1,4 @@
-import { createElement } from './utils.js';
+import { createElement as crt } from './utils.js';
 export class Watch {
   #value: string = '';
   private nodes: Set<HTMLSpanElement> = new Set();
@@ -28,7 +28,7 @@ export class Watch {
     return elements.map(ele => this.enable(ele));
   }
   enable(element: HTMLElement) {
-    const node = createElement('span', this.#value, {});
+    const node = crt('span', this.#value, {});
     node.setAttribute(`data-${this.#name}`, this.#value);
     element.appendChild(node);
     this.nodes.add(node);

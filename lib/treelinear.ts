@@ -1,18 +1,32 @@
-import { Delay } from './delay.js';
-import { Iterations } from './iterations.js';
+import { Delay as Del } from './delay.js';
+import { Iterations as Itr } from './iterations.js';
 import { KeyboardShortcut as Sh } from './keyboardshortcuts.js';
-import { callBackQuery, row, subtreePropertys, convertionDataTree, tree, orderBy, methodesTreeMap, submitTypePress, timer } from './types.js';
-import { createElement, forEachAsync } from './utils.js';
-export class TreeLinear<T> extends Iterations<T> {
-  #mainTreeElement = createElement('span', '', {
+import { callBackQuery, row, subtreePropertys, convertionDataTree, tree, orderBy, methodesTreeMap, submitTypePress, timer, creationDirection } from './types.js';
+import { createElement as crt, forEachAsync as each, readDirection } from './utils.js';
+export class TreeLinear<T> extends Itr<T> {
+  #mainTreeElement = crt('span', '', {
     'aria-level': -1,
     'aria-disabled': 'true',
   });
   #callbackQuery: callBackQuery<T & row> = i => `${i}`;
+  static #trees: TreeLinear<any>[] = [];
   public separator = '/';
   private treePropertys: subtreePropertys<T>[] = [];
-  closeIconElement: HTMLElement = createElement('i', 'open', {});
-  openIconElement: HTMLElement = createElement('i', 'close', {});
+  public levelSize = 20;
+  #closeIconElement: [keyof HTMLElementTagNameMap, string, object] = [
+    'i',
+    '&rightarrow;',
+    {
+      style: 'cursor: pointer',
+    },
+  ];
+  #openIconElement: [keyof HTMLElementTagNameMap, string, object] = [
+    'i',
+    '&downarrow;',
+    {
+      style: 'cursor: pointer',
+    },
+  ];
   constructor(root: HTMLElement, title: string, propertys: (keyof T)[], defaultValues: T) {
     super(root, title, propertys, defaultValues);
     this.root.setAttribute('role', 'treelinear');
@@ -45,6 +59,7 @@ export class TreeLinear<T> extends Iterations<T> {
         });
       }),
     };
+    TreeLinear.#trees.push(this);
   }
   override get ITEMS() {
     return super.ITEMS;
@@ -119,7 +134,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var showMoreIcon = this.#getIconElement(element);
     if (showMoreIcon) {
       showMoreIcon.innerHTML = ``;
-      showMoreIcon.appendChild(this.openIconElement.cloneNode(true));
+      showMoreIcon.appendChild(this.getOpenIconElement());
       this.#inner(element).forEach(ele => {
         this.setShow(ele, true);
         if (ele.ariaAutoComplete == 'true') {
@@ -134,7 +149,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var showMoreIcon = this.#getIconElement(element);
     if (showMoreIcon) {
       showMoreIcon.innerHTML = '';
-      showMoreIcon.appendChild(this.closeIconElement.cloneNode(true));
+      showMoreIcon.appendChild(this.getCloseIconElement());
       this.#inner(element).forEach(ele => {
         this.setShow(ele, false);
         if (this.#isOpend(ele)) {
@@ -146,12 +161,6 @@ export class TreeLinear<T> extends Iterations<T> {
   }
   #toggle(element: HTMLElement) {
     this.#isClosed(element) ? this.#open(element) : this.#close(element);
-  }
-  override line(element: HTMLElement | string = '') {
-    element = this.convertTo(element, 'element');
-    var ele = createElement('div', '', { role: 'line' });
-    this.#inner(element);
-    this.root.appendChild(ele);
   }
   inner(element: HTMLElement | string) {
     element = this.convertTo(element, 'element');
@@ -193,17 +202,24 @@ export class TreeLinear<T> extends Iterations<T> {
     var columns = this.items(element);
     return this.treePropertys.every(({ property, value }) => columns[this.propertys.indexOf(property)].innerHTML.trim() === `${value}`.trim());
   }
+  changeLevel(element: HTMLElement, to: number) {
+    var levelElement = this.#getLevelElement(element);
+    if (!levelElement) return;
+    element.ariaLevel = `${to}`;
+    levelElement.style.width = `${this.levelSize * (to + 1)}px`;
+  }
   override createRow(input: T, lvl: number = 0, closed: boolean = false, visible: boolean = true): HTMLElement {
     var result = super.createRow(input);
-    result.ariaLevel = `${lvl}`;
+    this.changeLevel(result, lvl);
     result.ariaHidden = `${closed}`;
     this.setShow(result, visible);
     if (this.isTree(result)) {
       result.ariaExpanded = 'true';
-      var showMoreIcon = createElement('span', ``, {
+      var showMoreIcon = crt('span', ``, {
         role: 'icon',
+        style: 'position: absolute ; right: 0px; top: 0px; bottom: 0px;',
       });
-      showMoreIcon.appendChild((closed ? this.closeIconElement : this.openIconElement).cloneNode(true));
+      showMoreIcon.appendChild(crt(...(closed ? this.#closeIconElement : this.#openIconElement)));
       showMoreIcon.onclick = () => this.#toggle(result);
       result.querySelector('[role="level"]')?.prepend(showMoreIcon);
     } else result.ariaExpanded = 'false';
@@ -238,10 +254,10 @@ export class TreeLinear<T> extends Iterations<T> {
       element.ariaExpanded = `${isTree}`;
       if (isTree) {
         if (!iconShowMore) {
-          var showMoreIcon = createElement('span', '', {
+          var showMoreIcon = crt('span', '', {
             role: 'icon',
           });
-          showMoreIcon.appendChild(this.closeIconElement);
+          showMoreIcon.appendChild(this.getCloseIconElement());
           showMoreIcon.onclick = () => this.#toggle(element);
           element.querySelector('[role="level"]')?.prepend(showMoreIcon);
         }
@@ -260,7 +276,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var initLevel = this.getLevel(element) + 1;
     element = this.lastChildOf(element) || element;
     data = data.reverse();
-    var dl = new Delay(timeout as number);
+    var dl = new Del(timeout as number);
     var result: (T & row)[] = [];
     for (let i = 0; i < data.length; i++) {
       if (!(i % limit)) await dl.on();
@@ -276,7 +292,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var isOpend = this.#isOpend(element);
     var initLevel = this.getLevel(element) + 1;
     data = data.reverse();
-    var dl = new Delay(timeout as number);
+    var dl = new Del(timeout as number);
     var result: (T & row)[] = [];
     for (let i = 0; i < data.length; i++) {
       if (!(i % limit)) dl.on();
@@ -293,7 +309,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var isClosed = element.style.display == 'none';
     element = inner.at(-1) || element;
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data.reverse(),
       d => {
         var ele = this.createRow(d, lvl, false, isClosed);
@@ -309,7 +325,7 @@ export class TreeLinear<T> extends Iterations<T> {
     var lvl = this.getLevel(element);
     var isClosed = element.style.display == 'none';
     var result: (T & row)[] = [];
-    await forEachAsync(
+    await each(
       data,
       d => {
         var ele = this.createRow(d, lvl, false, isClosed);
@@ -322,14 +338,14 @@ export class TreeLinear<T> extends Iterations<T> {
     return result;
   }
   protected async delete(element: HTMLElement, timeout: number, limit: number) {
-    await forEachAsync(this.#inner(element), async ele => await this.delete(ele, timeout, limit), timeout, limit);
+    await each(this.#inner(element), async ele => await this.delete(ele, timeout, limit), timeout, limit);
     element.remove();
   }
   protected async insert(element: HTMLElement, tree: tree<T>[], timeout: timer<tree<T>>, limit: number): Promise<(T & row)[]> {
     var result: (T & row)[] = [];
     var level = this.getLevel(element) + 1;
     var isOpend = this.#isOpend(element);
-    await forEachAsync(
+    await each(
       tree,
       async ({ body, innerTree }) => {
         var ele = this.createRow(body, level, true, isOpend);
@@ -423,21 +439,19 @@ export class TreeLinear<T> extends Iterations<T> {
       tree.innerTree.forEach(tr => result.push(tr.body, ...childs(tr)));
       return result;
     }
-    var sort = (tree: tree<T & row>[] = Tr) => {
+    var sort = (tree: tree<T & row>[] = Tr, ele: HTMLElement = element) => {
       var sortedData = tree.sort((a, b) => (a.body[sortBy] < b.body[sortBy] ? 1 : -1));
       if (orderby == 'DESC') sortedData = sortedData.reverse();
       sortedData.forEach(tree => {
         var ch = childs(tree).map(({ row }) => row);
-        element.after(...ch);
+        ele.after(...ch);
       });
-      console.log('-'.repeat(30));
-      if (deep) {
+      if (deep)
         tree
           .filter(({ body: { row } }) => this.isTree(row))
-          .forEach(({ innerTree }) => {
-            Array.isArray(innerTree) && innerTree.length && sort(innerTree);
+          .forEach(({ innerTree, body: { row } }) => {
+            Array.isArray(innerTree) && innerTree.length && sort(innerTree, row);
           });
-      }
     };
     sort();
   }
@@ -451,11 +465,11 @@ export class TreeLinear<T> extends Iterations<T> {
     var sort = async (tree: tree<T & row>[] = Tr) => {
       var sortedData = tree.sort((a, b) => (a.body[sortBy] < b.body[sortBy] ? 1 : -1));
       if (orderby == 'DESC') sortedData = sortedData.reverse();
-      await forEachAsync(
+      await each(
         sortedData,
         async tree => {
           var ch = childs(tree).map(({ row }) => row);
-          await forEachAsync(
+          await each(
             ch.reverse(),
             ele => {
               element.after(ele);
@@ -468,7 +482,7 @@ export class TreeLinear<T> extends Iterations<T> {
         limit,
       );
       if (deep) {
-        await forEachAsync(
+        await each(
           tree.filter(({ body: { row } }) => this.isTree(row)),
           ({ innerTree }) => {
             Array.isArray(innerTree) && innerTree.length && sort(innerTree);
@@ -560,15 +574,15 @@ export class TreeLinear<T> extends Iterations<T> {
     if (this.isTree(element)) throw Error('Cannot Be open element not subtree element');
     else this.#close(element);
   }
-  override submit(type: submitTypePress = 'call', element = this.ELEMENT_DIRECTION) {
-    if (!this.SELECTD_ELEMENTS.length || this.isTree(element!)) return;
-    this.onfunctionsubmit.forEach(fn => fn(type, element!));
-  }
   jsonTree(element: HTMLElement): tree<T> {
     return {
       body: super.json(element),
       innerTree: this.isTree(element) ? this.#inner(element).map(ele => this.jsonTree(ele)) : [],
     };
+  }
+  override submit(type: submitTypePress = 'call', element = this.ELEMENT_DIRECTION) {
+    if (!this.SELECTD_ELEMENTS.length || this.isTree(element!)) return;
+    this.onfunctionsubmit.forEach(fn => fn(type, element!));
   }
   override async copy() {
     var selectedElement = this.SELECTD_ELEMENTS;
@@ -599,17 +613,45 @@ export class TreeLinear<T> extends Iterations<T> {
     if (!Array.isArray(data)) throw Error('paste ignore');
     var selected = this.SELECTD_ELEMENTS.filter(ele => this.isTree(ele));
     var div = selected.length / data.length;
-    if (div >= 1 && div == parseInt(`${div}`)) await forEachAsync(selected, async (element, index) => result.push(...(await this.insert(element, data.slice(index * div, (index + 1) * div), timeout as number, limit))), timeout, limit);
-    else if (selected.length) await forEachAsync(selected, async element => result.push(...(await this.insert(element, data, timeout as number, limit))), timeout, limit);
+    if (div >= 1 && div == parseInt(`${div}`)) await each(selected, async (element, index) => result.push(...(await this.insert(element, data.slice(index * div, (index + 1) * div), timeout as number, limit))), timeout, limit);
+    else if (selected.length) await each(selected, async element => result.push(...(await this.insert(element, data, timeout as number, limit))), timeout, limit);
     else result.push(...(await this.insert(this.#mainTreeElement, data, timeout as number, limit)));
     this.isloading = false;
     return result;
+  }
+  setOpenIconElement(config: [keyof HTMLElementTagNameMap, string, object]) {
+    this.#openIconElement = config;
+    this.ITEMS.forEach(ele => {
+      var icon = this.#getIconElement(ele);
+      if (icon) {
+        icon.innerHTML = '';
+        icon.appendChild(this.getOpenIconElement());
+      }
+    });
+    return this;
+  }
+  getOpenIconElement() {
+    return crt(...this.#openIconElement);
+  }
+  setCloseIconElement(config: [keyof HTMLElementTagNameMap, string, object]) {
+    this.#closeIconElement = config;
+    this.ITEMS.forEach(ele => {
+      var icon = this.#getIconElement(ele);
+      if (icon) {
+        icon.innerHTML = '';
+        icon.appendChild(this.getCloseIconElement());
+      }
+    });
+    return this;
+  }
+  getCloseIconElement() {
+    return crt(...this.#closeIconElement);
   }
   static override create<T>(title: string, defaultValue: T): TreeLinear<T> {
     var tree = super.create(title, defaultValue);
     return tree as TreeLinear<T>;
   }
   static override title(title: string) {
-    return super.title(title) as TreeLinear<any>;
+    return this.#trees.find(({ title: tlt }) => tlt == title) || null;
   }
 }

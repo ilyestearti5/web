@@ -182,7 +182,7 @@ export class KeyboardShortcut {
     else if (when == 'press') this.onfunctionspress = [];
     this.when[when] = false;
   }
-  changeFrom(value: 'key' | 'code') {
+  setFrom(value: 'key' | 'code') {
     this.from = value == 'key' ? 'key' : 'code';
     return this;
   }

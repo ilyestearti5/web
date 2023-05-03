@@ -123,28 +123,13 @@ export interface pathOfSwitch {
   element: HTMLElement;
   path: string;
 }
-export type modifiersKeys<os extends keyof Os = 'windows'> =
-  | Os[os]
-  | 'shift'
-  | 'alt';
-export type listenerKeyboardShortcut = (
-  combinition: propertyShortcut,
-  event: KeyboardEvent | null,
-  type: 'key' | 'call',
-) => void;
+export type modifiersKeys<os extends keyof Os = 'windows'> = Os[os] | 'shift' | 'alt';
+export type listenerKeyboardShortcut = (combinition: propertyShortcut, event: KeyboardEvent | null, type: 'key' | 'call') => void;
 export type direction = 'forword' | 'backword';
-export type submitListener = (
-  type: submitTypePress,
-  element: HTMLElement,
-) => void;
+export type submitListener = (type: submitTypePress, element: HTMLElement) => void;
 export type submitTypePress = 'call' | 'keypress' | 'click';
 export type orderBy = 'ASC' | 'DESC';
 export type shortcutActivation = 'down' | 'up' | 'press';
 export type callBackQuery<T> = (data: T, index: number) => string;
 export type timer<T> = number | ((value: T, index: number) => number);
-export type creationFunction<T> = (
-  input: T,
-  create: (value: keyof T) => HTMLSpanElement,
-  rowElement: HTMLElement,
-  contentElement: HTMLElement,
-) => HTMLElement[];
+export type creationFunction<T> = (input: T, create: (value: keyof T) => HTMLSpanElement, rowElement: HTMLElement, contentElement: HTMLElement) => HTMLElement[];

@@ -1,31 +1,16 @@
 import { Delay } from './delay.js';
-import {
-  timer,
-  creationDirection,
-  _ResultMap,
-  visiblityFunctionResult,
-} from './types.js';
-export async function forEachAsync<T>(
-  array: T[],
-  callback: (value: T, index: number) => void,
-  timeout: timer<T>,
-  limits: number,
-) {
+import { timer, creationDirection, _ResultMap, visiblityFunctionResult } from './types.js';
+export async function forEachAsync<T>(array: T[], callback: (value: T, index: number) => void, timeout: timer<T>, limits: number) {
   var dl = new Delay(0);
   for (let i = 0; i < array.length; i++) {
     if (i % limits == 0) {
-      dl.timeout =
-        typeof timeout == 'function' ? timeout(array[i], i) : timeout;
+      dl.timeout = typeof timeout == 'function' ? timeout(array[i], i) : timeout;
       await dl.on();
     }
     await callback(array[i], i);
   }
 }
-export async function extractElement(
-  element: HTMLElement,
-  timeout: number = 500,
-  limit: number = 1,
-) {
+export async function extractElement(element: HTMLElement, timeout: number = 500, limit: number = 1) {
   var { parentElement } = element;
   if (!parentElement) return;
   element.remove();
@@ -38,11 +23,7 @@ export async function extractElement(
     limit,
   );
 }
-export function createElement<T extends keyof HTMLElementTagNameMap, U>(
-  tagname: T,
-  content: string,
-  attributes: U,
-): HTMLElementTagNameMap[T] {
+export function createElement<T extends keyof HTMLElementTagNameMap, U>(tagname: T, content: string, attributes: U): HTMLElementTagNameMap[T] {
   var result = document.createElement(tagname);
   result.innerHTML = content;
   for (let attr in attributes) result.setAttribute(attr, `${attributes[attr]}`);
@@ -53,42 +34,20 @@ export function defaultObject<T>(o: T, def: T): T {
   for (let prop in def) rs[prop] = o[prop] == undefined ? def[prop] : o[prop];
   return rs;
 }
-export function range(
-  max: number,
-  min: number = 0,
-  steps: number = 1,
-): Array<number> {
+export function range(max: number, min: number = 0, steps: number = 1): Array<number> {
   var array: number[] = [];
   for (let i = min; i < max; i += steps) array.push(i);
   return array;
 }
-export function scrollToElement(
-  element: HTMLElement | null,
-  position: number = 0,
-) {
+export function scrollToElement(element: HTMLElement | null, position: number = 0) {
   if (!element) return false;
   var { parentElement } = element;
   if (!parentElement) return;
   var { x: eX, y: eY, height: eH, width: eW } = element.getBoundingClientRect();
-  var {
-    x: pX,
-    y: pY,
-    height: pH,
-    width: pW,
-  } = parentElement.getBoundingClientRect();
+  var { x: pX, y: pY, height: pH, width: pW } = parentElement.getBoundingClientRect();
   parentElement.scroll({
-    top:
-      eY -
-      pY -
-      eH * position -
-      (position >= 0 ? 0 : pH) +
-      parentElement.scrollTop,
-    left:
-      eX -
-      pX -
-      eW * position -
-      (position >= 0 ? 0 : pW) +
-      parentElement.scrollLeft,
+    top: eY - pY - eH * position - (position >= 0 ? 0 : pH) + parentElement.scrollTop,
+    left: eX - pX - eW * position - (position >= 0 ? 0 : pW) + parentElement.scrollLeft,
   });
 }
 export function extractElementSync(element: HTMLElement) {
@@ -97,10 +56,8 @@ export function extractElementSync(element: HTMLElement) {
   element.remove();
   Array.from(element.children).forEach(ele => parentElement!.appendChild(ele));
 }
-export var calc = (exprision: string): number =>
-  Function(`return +${exprision}`)();
-export var between = (max: number = 10, min: number = 0) =>
-  Math.trunc(Math.random() * (max - 1 - min)) + min;
+export var calc = (exprision: string): number => Function(`return +${exprision}`)();
+export var between = (max: number = 10, min: number = 0) => Math.trunc(Math.random() * (max - 1 - min)) + min;
 export var randomItem = <T>(array: T[]): { value: T; index: number } => {
   var index = between(array.length);
   return {
@@ -112,24 +69,11 @@ export var isLooked = (element: HTMLElement | null): boolean => {
   if (!element) return false;
   var { parentElement } = element;
   if (!parentElement) return true;
-  var {
-    left: eL,
-    right: eR,
-    top: eT,
-    bottom: eB,
-  } = element.getBoundingClientRect();
-  var {
-    left: pL,
-    right: pR,
-    top: pT,
-    bottom: pB,
-  } = parentElement.getBoundingClientRect();
+  var { left: eL, right: eR, top: eT, bottom: eB } = element.getBoundingClientRect();
+  var { left: pL, right: pR, top: pT, bottom: pB } = parentElement.getBoundingClientRect();
   return pT <= eT && eB <= pB && pL <= eL && eR <= pR;
 };
-export var countOf = <T>(
-  array: T[],
-  callback: (value: T, index: number) => boolean,
-) => array.filter(callback).length;
+export var countOf = <T>(array: T[], callback: (value: T, index: number) => boolean) => array.filter(callback).length;
 export async function createDirection(content: creationDirection) {
   var inp = content.body;
   var result = inp instanceof HTMLElement ? inp : createElement(...inp);
@@ -141,10 +85,7 @@ export async function createDirection(content: creationDirection) {
     });
   return result;
 }
-export function readDirection(
-  element: HTMLElement,
-  ignoreTags: (keyof HTMLElementTagNameMap)[],
-): creationDirection {
+export function readDirection(element: HTMLElement, ignoreTags: (keyof HTMLElementTagNameMap)[]): creationDirection {
   var tagname = element.tagName.toLowerCase() as keyof HTMLElementTagNameMap;
   var attributes: object = Object.create(null);
   var attrs = element.attributes;
@@ -161,24 +102,11 @@ export function readDirection(
   }
   return {
     body: [tagname, content, attributes],
-    inner: childs
-      .filter(
-        ({ tagName }) =>
-          !ignoreTags.includes(
-            tagName.toLowerCase() as keyof HTMLElementTagNameMap,
-          ),
-      )
-      .map(ele => readDirection(ele as HTMLElement, ignoreTags)),
+    inner: childs.filter(({ tagName }) => !ignoreTags.includes(tagName.toLowerCase() as keyof HTMLElementTagNameMap)).map(ele => readDirection(ele as HTMLElement, ignoreTags)),
     async fn(e) {},
   };
 }
-export const _ = <T extends keyof _ResultMap>(
-  query: string,
-  result: T,
-): _ResultMap[T] =>
-  (result == 'all'
-    ? Array.from(document.querySelectorAll(query))
-    : document.querySelector(query)) as _ResultMap[T];
+export const _ = <T extends keyof _ResultMap>(query: string, result: T): _ResultMap[T] => (result == 'all' ? Array.from(document.querySelectorAll(query)) : document.querySelector(query)) as _ResultMap[T];
 export function visiblity(element: HTMLElement): visiblityFunctionResult {
   return {
     get visible() {

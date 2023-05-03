@@ -1,10 +1,10 @@
-import { ListBox } from './listbox.js';
+import { ListBox as List } from './listbox.js';
 import { configurationToolBar } from './types.js';
-import { createElement } from './utils.js';
-export class ToolBar<T> extends ListBox {
+import { createElement as crt } from './utils.js';
+export class ToolBar<T> extends List {
   #types: (keyof T)[] = [];
   constructor(title: string, ...types: (keyof T)[]) {
-    var root = createElement('ul', '', {});
+    var root = crt('ul', '', {});
     super(root, title);
     this.#types = types;
     this.root.setAttribute('role', 'toolbar');
@@ -29,7 +29,7 @@ export class ToolBar<T> extends ListBox {
     var fdTip = this.findTip(label);
     if (fdTip) throw Error(`The Label ${label.toString()} is defined`);
     var c = outlined ? 'material-symbols-outlined' : 'material-icons';
-    var element = createElement('li', `<i class="${c}">${iconName}</i>`, {
+    var element = crt('li', `<i class="${c}">${iconName}</i>`, {
       'aria-label': label,
     });
     this.root.appendChild(element);
