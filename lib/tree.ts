@@ -4,6 +4,8 @@ import { subtreePropertys, callBackQuery, row, convertionDataTree, submitTypePre
 import { createElement, forEachAsync } from './utils.js';
 export class Tree<T> extends Iterations<T> {
   #treepropertys: subtreePropertys<T>[] = [];
+  onOpenFunctions: Function[] = [];
+  onCloseFunctions: Function[] = [];
   #callbackQuery: callBackQuery<T & row> = (d, i) => `${i}`;
   #mainTreeElement: HTMLElement;
   public separator = '/';
@@ -90,7 +92,7 @@ export class Tree<T> extends Iterations<T> {
   #getContentElement(element: HTMLElement) {
     return Array.from(this.#getItemElement(element).children).find(ele => ele.getAttribute('role') == 'content')! as HTMLElement;
   }
-  #getInnerTreeElement(element: HTMLElement) {
+  #getInnerTreeElement(element: HTMLElement): HTMLElement | null {
     return Array.from(element.children).find(ele => ele.getAttribute('role') == 'tree') as HTMLElement | null;
   }
   #getOuterTreeElement(element: HTMLElement) {
@@ -389,8 +391,35 @@ export class Tree<T> extends Iterations<T> {
       }
     }
   }
-  static override create<R>(title: string, defaultValue: R): Tree<R> {
-    return super.create(title, defaultValue) as Tree<R>;
+  get DATA() {
+    var fn = (element: HTMLElement): tree<T & row> => {
+      var body = this.readRow(element);
+      return {
+        body,
+        innerTree: this.isTree(element) ? this.#inner(element).map(ele => fn(ele)) : [],
+      };
+    };
+    return fn(this.#mainTreeElement);
+  }
+  onopen(listener: Function) {
+    typeof listener == 'function' && this.onOpenFunctions.push(listener);
+    return this;
+  }
+  offopen(listener: Function) {
+    const index = this.onOpenFunctions.indexOf(listener);
+    if (index < 0) return false;
+    this.onOpenFunctions.splice(index, 1);
+    return true;
+  }
+  onclose(listener: Function) {
+    typeof listener == 'function' && this.onCloseFunctions.push(listener);
+    return this;
+  }
+  offclose(listener: Function) {
+    const index = this.onCloseFunctions.indexOf(listener);
+    if (index < 0) return false;
+    this.onOpenFunctions.splice(index, 1);
+    return true;
   }
   isOpend(element: HTMLElement) {
     var ele = this.#getInnerTreeElement(element);
@@ -404,14 +433,14 @@ export class Tree<T> extends Iterations<T> {
   }
   open(element: HTMLElement) {
     var ele = this.#getInnerTreeElement(element);
-    if (ele) {
+    if (ele && this.isClosed(element)) {
       ele.style.display = '';
       this.#inner(element).forEach(e => this.setEffective(e, true));
     }
   }
   close(element: HTMLElement) {
     var ele = this.#getInnerTreeElement(element);
-    if (ele) {
+    if (ele && this.isOpend(element)) {
       ele.style.display = 'none';
       this.#inner(element).forEach(e => this.setEffective(e, false));
     }
@@ -456,5 +485,12 @@ export class Tree<T> extends Iterations<T> {
     //   ...(await this.insert(this.#mainTreeElement, data, timeout, limit))
     // );
     return result;
+  }
+  static override create<T>(title: string, defaultValue: T) {
+    var tree = super.create(title, defaultValue);
+    return tree as Tree<T>;
+  }
+  static override title(title: string) {
+    return super.title(title) as Tree<any>;
   }
 }

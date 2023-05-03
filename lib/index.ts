@@ -1,4 +1,3 @@
-import { Graphe } from './graphe.js';
 import { ListBox } from './listbox.js';
 import { Table } from './table.js';
 import { Tree } from './tree.js';
@@ -9,7 +8,6 @@ import { KeyboardShortcut } from './keyboardshortcuts.js';
 import { Switch } from './switch.js';
 import { Iterations } from './iterations.js';
 export {
-  Graphe,
   ListBox,
   Table,
   Tree,

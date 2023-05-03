@@ -4,17 +4,13 @@ import { KeyboardShortcut as Sh } from './keyboardshortcuts.js';
 import { callBackQuery, row, subtreePropertys, convertionDataTree, tree, orderBy, methodesTreeMap, submitTypePress, timer } from './types.js';
 import { createElement, forEachAsync } from './utils.js';
 export class TreeLinear<T> extends Iterations<T> {
-  // the main element has childs only
   #mainTreeElement = createElement('span', '', {
     'aria-level': -1,
     'aria-disabled': 'true',
   });
-  // the callback when need to get query
   #callbackQuery: callBackQuery<T & row> = i => `${i}`;
-  // separator between querys
   public separator = '/';
-  // what the subtree element has
-  #treePropertys: subtreePropertys<T>[] = [];
+  private treePropertys: subtreePropertys<T>[] = [];
   closeIconElement: HTMLElement = createElement('i', 'open', {});
   openIconElement: HTMLElement = createElement('i', 'close', {});
   constructor(root: HTMLElement, title: string, propertys: (keyof T)[], defaultValues: T) {
@@ -195,7 +191,7 @@ export class TreeLinear<T> extends Iterations<T> {
   isTree(element: HTMLElement) {
     if (this.#mainTreeElement == element) return true;
     var columns = this.items(element);
-    return this.#treePropertys.every(({ property, value }) => columns[this.propertys.indexOf(property)].innerHTML.trim() === `${value}`.trim());
+    return this.treePropertys.every(({ property, value }) => columns[this.propertys.indexOf(property)].innerHTML.trim() === `${value}`.trim());
   }
   override createRow(input: T, lvl: number = 0, closed: boolean = false, visible: boolean = true): HTMLElement {
     var result = super.createRow(input);
@@ -220,9 +216,22 @@ export class TreeLinear<T> extends Iterations<T> {
       innerTree: this.#inner(element).map(ele => this.read(ele)),
     };
   }
-  // setters
+  create<S extends keyof T>(query: string, prop: S, from: HTMLElement = this.#mainTreeElement) {
+    if (query == '') return;
+    var index = query.indexOf(this.separator);
+    var firstQuery = query.slice(0, index);
+    query = query.slice(index + 1);
+    var element = this.#inner(from).find((ele, index) => this.#callbackQuery(this.readRow(ele), index) == firstQuery);
+    if (!element) {
+      var o: T = Object.create(null);
+      o[prop] = firstQuery as T[S];
+      var ele = this.appendSync(from, [o]);
+      from = ele[0].row;
+    }
+    this.create(query, prop, from);
+  }
   setTreePropertys(...propertys: subtreePropertys<T>[]) {
-    this.#treePropertys = propertys;
+    this.treePropertys = propertys;
     this.ITEMS.forEach(element => {
       var isTree = this.isTree(element);
       var iconShowMore = element.querySelector(`[role="level"] > [role="icon"]`);
@@ -245,32 +254,37 @@ export class TreeLinear<T> extends Iterations<T> {
     this.shortcuts.inner!.close.targets = targets;
   }
   protected async append(element: HTMLElement | string, data: T[], timeout: number, limit: number) {
-    // the same steps in the methode `appendSync`
     element = this.convertTo(element, 'element');
     if (!this.isTree(element)) throw Error('Cannot Be add in this item');
     var isOpend = this.#isOpend(element);
     var initLevel = this.getLevel(element) + 1;
     element = this.lastChildOf(element) || element;
     data = data.reverse();
-    // create delay for make sure the append is not directly append all element
     var dl = new Delay(timeout as number);
+    var result: (T & row)[] = [];
     for (let i = 0; i < data.length; i++) {
       if (!(i % limit)) await dl.on();
-      element.after(this.createRow(data[i], initLevel, true, isOpend));
+      var ele = this.createRow(data[i], initLevel, true, isOpend);
+      element.after(ele);
+      result.push(this.readRow(ele));
     }
+    return result;
   }
   protected async prepend(element: HTMLElement | string, data: T[], timeout: number, limit: number) {
-    // the same steps of appendSync method just remove step number 5
     element = this.convertTo(element, 'element');
     if (!this.isTree(element)) throw Error('Cannot Be add in this item');
     var isOpend = this.#isOpend(element);
     var initLevel = this.getLevel(element) + 1;
     data = data.reverse();
     var dl = new Delay(timeout as number);
+    var result: (T & row)[] = [];
     for (let i = 0; i < data.length; i++) {
       if (!(i % limit)) dl.on();
-      element.after(this.createRow(data[i], initLevel, true, isOpend));
+      var ele = this.createRow(data[i], initLevel, true, isOpend);
+      element.after(ele);
+      result.push(this.readRow(ele));
     }
+    return result;
   }
   protected async after(element: HTMLElement, data: T[], timeout: number, limit: number) {
     this.throwLoading();
@@ -278,12 +292,34 @@ export class TreeLinear<T> extends Iterations<T> {
     var inner = this.childsOf(element);
     var isClosed = element.style.display == 'none';
     element = inner.at(-1) || element;
-    await forEachAsync(data.reverse(), d => element.after(this.createRow(d, lvl, false, isClosed)), timeout, limit);
+    var result: (T & row)[] = [];
+    await forEachAsync(
+      data.reverse(),
+      d => {
+        var ele = this.createRow(d, lvl, false, isClosed);
+        element.after(ele);
+        result.push(this.readRow(ele));
+      },
+      timeout,
+      limit,
+    );
+    return result;
   }
   protected async before(element: HTMLElement, data: T[], timeout: number, limit: number) {
     var lvl = this.getLevel(element);
     var isClosed = element.style.display == 'none';
-    await forEachAsync(data, d => element.before(this.createRow(d, lvl, true, isClosed)), timeout, limit);
+    var result: (T & row)[] = [];
+    await forEachAsync(
+      data,
+      d => {
+        var ele = this.createRow(d, lvl, false, isClosed);
+        element.before(ele);
+        result.push(this.readRow(ele));
+      },
+      timeout,
+      limit,
+    );
+    return result;
   }
   protected async delete(element: HTMLElement, timeout: number, limit: number) {
     await forEachAsync(this.#inner(element), async ele => await this.delete(ele, timeout, limit), timeout, limit);
@@ -308,32 +344,33 @@ export class TreeLinear<T> extends Iterations<T> {
     return result;
   }
   protected appendSync(element: HTMLElement | string, data: T[]) {
-    // convert element (element|query) to HTMLElement
     element = this.convertTo(element, 'element');
-    // throw error if the element gona append as not subtree element
     if (!this.isTree(element)) throw Error('Cannot Be add in this item');
-    // isOpend true if the element is opend and thes inner items is visible else false
     var isOpend = this.#isOpend(element);
-    // the initial level of element expl: element level => 10 the new items element level => 11
     var initLevel = this.getLevel(element) + 1;
-    // test if this element has a last element child reccur or not => if has the element gona change
     element = this.lastChildOf(element) || element;
-    // reverse data for when append to element the order stay fix
     data = data.reverse();
-    // creation of items
+    var result: (T & row)[] = [];
     for (let i = 0; i < data.length; i++) {
-      // set the row element if as visible and effective or not
-      element.after(this.createRow(data[i], initLevel, true, isOpend));
+      var ele = this.createRow(data[i], initLevel, true, isOpend);
+      element.after(ele);
+      result.push(this.readRow(ele));
     }
+    return result;
   }
   protected prependSync(element: HTMLElement | string, data: T[]) {
-    // the same steps of appendSync method just remove step number 5
     element = this.convertTo(element, 'element');
     if (!this.isTree(element)) throw Error('Cannot Be add in this item');
     var isOpend = this.#isOpend(element);
     var initLevel = this.getLevel(element) + 1;
     data = data.reverse();
-    for (let i = 0; i < data.length; i++) element.after(this.createRow(data[i], initLevel, true, isOpend));
+    var result: (T & row)[] = [];
+    for (let i = 0; i < data.length; i++) {
+      var ele = this.createRow(data[i], initLevel, true, isOpend);
+      element.after(ele);
+      result.push(this.readRow(ele));
+    }
+    return result;
   }
   protected afterSync(element: HTMLElement, data: T[]) {
     this.throwLoading();
@@ -344,26 +381,40 @@ export class TreeLinear<T> extends Iterations<T> {
       element = inner.at(-1)!;
       inner = this.#inner(element);
     }
-    data.reverse().forEach(d => element.after(this.createRow(d, lvl, false, !isClosed)));
+    var result: (T & row)[] = [];
+    data.reverse().forEach(d => {
+      var ele = this.createRow(d, lvl, false, !isClosed);
+      element.after(ele);
+      result.push(this.readRow(ele));
+    });
+    return result;
   }
   protected beforeSync(element: HTMLElement, data: T[]) {
     var lvl = this.getLevel(element);
     var isClosed = element.style.display == 'none';
-    data.forEach(d => element.before(this.createRow(d, lvl, true, isClosed)));
+    var result: (T & row)[] = [];
+    data.forEach(d => {
+      var ele = this.createRow(d, lvl, false, !isClosed);
+      element.before(ele);
+      result.push(this.readRow(ele));
+    });
+    return result;
   }
   protected deleteSync(element: HTMLElement) {
     this.#inner(element).forEach(ele => this.deleteSync(ele));
     element.remove();
   }
-  protected insertSync(element: HTMLElement, tree: tree<T>[]) {
+  protected insertSync(element: HTMLElement, tree: tree<T>[]): (T & row)[] {
     var level = this.getLevel(element) + 1;
     var isOpend = this.#isOpend(element);
+    var result: (T & row)[] = [];
     tree.forEach(({ body, innerTree }) => {
       var ele = this.createRow(body, level, true, isOpend);
       var mainElement = this.lastChildOf(element) || element;
       mainElement.after(ele);
-      Array.isArray(innerTree) && innerTree.length && this.insertSync(ele, innerTree);
+      Array.isArray(innerTree) && innerTree.length && result.push(...this.insertSync(ele, innerTree));
     });
+    return result;
   }
   protected sortSync(element: HTMLElement = this.#mainTreeElement, sortBy: keyof T, orderby: orderBy, deep: boolean = true) {
     var Tr = this.read(element).innerTree;
@@ -441,12 +492,10 @@ export class TreeLinear<T> extends Iterations<T> {
       case 'prepend': {
       }
       case 'after': {
-        await this[methode as 'after' | 'before' | 'append'](element, input as methodesTreeMap<T>['after'], timeout, limit);
-        break;
+        return await this[methode as 'after' | 'before' | 'append'](element, input as methodesTreeMap<T>['after'], timeout, limit);
       }
       case 'insert': {
-        await this.insert(element, input as methodesTreeMap<T>['insert'], timeout as timer<tree<T>>, limit);
-        break;
+        return await this.insert(element, input as methodesTreeMap<T>['insert'], timeout as timer<tree<T>>, limit);
       }
       case 'delete': {
         await this.delete(element, timeout, limit);
@@ -470,12 +519,10 @@ export class TreeLinear<T> extends Iterations<T> {
       case 'prepend': {
       }
       case 'after': {
-        this[`${methode as 'after' | 'before' | 'append'}Sync`](element, input as methodesTreeMap<T>['after']);
-        break;
+        return this[`${methode as 'after' | 'before' | 'append' | 'prepend'}Sync`](element, input as methodesTreeMap<T>['after']);
       }
       case 'insert': {
-        this.insertSync(element, input as methodesTreeMap<T>['insert']);
-        break;
+        return this.insertSync(element, input as methodesTreeMap<T>['insert']);
       }
       case 'delete': {
         this.deleteSync(element);
@@ -515,7 +562,7 @@ export class TreeLinear<T> extends Iterations<T> {
   }
   override submit(type: submitTypePress = 'call', element = this.ELEMENT_DIRECTION) {
     if (!this.SELECTD_ELEMENTS.length || this.isTree(element!)) return;
-    this.onSubmitFunctions.forEach(fn => fn(type, element!));
+    this.onfunctionsubmit.forEach(fn => fn(type, element!));
   }
   jsonTree(element: HTMLElement): tree<T> {
     return {
@@ -561,5 +608,8 @@ export class TreeLinear<T> extends Iterations<T> {
   static override create<T>(title: string, defaultValue: T): TreeLinear<T> {
     var tree = super.create(title, defaultValue);
     return tree as TreeLinear<T>;
+  }
+  static override title(title: string) {
+    return super.title(title) as TreeLinear<any>;
   }
 }

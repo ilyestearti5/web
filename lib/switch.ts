@@ -1,72 +1,99 @@
-import { Table } from './table.js';
 import { createElement } from './utils.js';
-export class Switch extends Table<{ label: string }> {
-  #viewElement = createElement('div', '', { role: 'views' });
-  #switchElement = createElement('div', '', { role: 'switch' });
-  #querys: Set<HTMLElement> = new Set(null);
-  constructor(title: string) {
-    const root = createElement('div', '', {});
-    super(root, `switch:${title}`, ['label'], { label: '-' });
-    this.#switchElement.appendChild(root);
-    this.#switchElement.appendChild(this.#viewElement);
-    this.configurations.selection = false;
-    this.configurations.redirect = false;
-    // clear all when shortcut you make shore is d'ont usable before
-    this.shortcuts.selection.all.clear('down');
-    this.shortcuts.selection.forword.clear('down');
-    this.shortcuts.selection.backword.clear('down');
-    this.shortcuts.selection.fullforword.clear('down');
-    this.shortcuts.selection.fullbackword.clear('down');
-    this.onsubmit((type, ele) => {
-      var lbl = this.readRow(ele).label;
-      if (this.selected == lbl) return;
-      this.set(lbl);
+import { pathOfSwitch } from './types.js';
+import { Table } from './table.js';
+export class Switch {
+  #viewElement: HTMLElement;
+  #paths: pathOfSwitch[] = [];
+  #links: Table<{ path: string }>;
+  private onfunctionschange: Function[] = [];
+  constructor(
+    public readonly title: string,
+    viewElement: HTMLElement = createElement('div', '', {}),
+  ) {
+    this.#viewElement = viewElement;
+    this.#links = Table.create(this.title, { path: ' - ' });
+    document.addEventListener('click', ({ target }) => {
+      if (!target) return;
+      var finded = (target as HTMLElement).closest(`*[path]`) as HTMLElement;
+      if (!finded) return;
+      var [switch_title, path_content] = finded
+        .getAttribute('path')!
+        .split(':');
+      if (switch_title != this.title) return;
+      this.set(path_content);
+    });
+    this.#links.onsubmit((e, element) => {
+      var data = this.#links.readRow(element);
+      this.set(data.path);
     });
   }
-  get view() {
+  get links() {
+    return this.#links;
+  }
+  get viewElement() {
     return this.#viewElement;
   }
-  get switch() {
-    return this.#switchElement;
+  get paths() {
+    return new Set(this.#paths.map(({ path }) => path));
   }
-  get(path: string, element: HTMLElement) {
-    if (path == 'no selected item') throw Error("cannot be use label 'no selected item' is usable for confiurations ");
-    element.setAttribute('aria-valuenow', path);
-    this.#querys.add(element);
-    this.appendSync([{ label: path }]);
-  }
-  delete(path: string) {
-    var finded = Array.from(this.#querys).find(element => element.ariaValueNow == path);
-    if (finded) {
-      this.#querys.delete(finded);
-      var finded2 = this.DATA.find(d => d.label == path);
-      if (finded2) finded2.row.remove();
-    }
-  }
-  set(path: string) {
-    var finded = this.DATA.find(({ label }) => label == path);
-    if (finded) {
-      this.select(finded.row);
-      this.#querys.forEach(ele => {
-        if (ele.ariaValueNow == path) {
-          this.#viewElement.appendChild(ele);
-          ele.ariaLive = 'true';
-        } else {
-          ele.remove();
-          ele.ariaLive = 'false';
-        }
-      });
-    }
-  }
-  get querys() {
-    return Array.from(this.#querys);
-  }
-  get selectedView() {
-    var fd = this.querys.find(ele => ele.ariaLive == 'true');
-    return fd ? fd : null;
+  get elements() {
+    return new Set(this.#paths.map(({ element }) => element));
   }
   get selected() {
-    const fd = this.selectedView;
-    return fd ? fd.ariaValueNow : 'no selected item';
+    var selected = Array.from(this.elements).find(e => e.ariaCurrent == 'true');
+    return selected ? selected.ariaValueText : null;
+  }
+  get(path: string, element: HTMLElement) {
+    if (this.paths.has(path))
+      throw Error('cannot use two path has diffrent element');
+    this.#paths.push({ path, element });
+    element.ariaCurrent = `false`;
+    element.ariaValueText = `${path}`;
+    this.#links.methodeSync('append', [{ path }]);
+    return this;
+  }
+  set(path: string) {
+    if (this.selected == path) return;
+    var finded = this.#paths.find(({ path: p }) => path == p);
+    if (!finded) {
+      console.warn(
+        Error(
+          `the path '${path}' is not defined tray defined by 'get' methode`,
+        ),
+      );
+      return this;
+    }
+    this.#viewElement.innerHTML = '';
+    this.#viewElement.appendChild(finded.element);
+    this.elements.forEach(ele => (ele.ariaCurrent = 'false'));
+    finded.element.ariaCurrent = 'true';
+    var data = this.#links.DATA;
+    var index = data.map(({ path }) => path).indexOf(path);
+    if (index >= 0) this.#links.select(data[index].row);
+    this.onfunctionschange.forEach(fn => fn());
+    return this;
+  }
+  onchange(listener: Function) {
+    typeof listener == 'function' && this.onfunctionschange.push(listener);
+    return this;
+  }
+  offchange(listener: Function) {
+    var index = this.onfunctionschange.indexOf(listener);
+    if (index < 0) return false;
+    this.onfunctionschange.splice(index, 1);
+    return true;
+  }
+  static fromElement(element: HTMLElement, title: string = `${element.ariaLabel}`) {
+    if(element.tagName.toLowerCase() != "switch") return null;
+    var switchElement = element;
+    var result = new Switch(title);
+    var cases = Array.from(switchElement.children) as HTMLElement[];
+    cases.forEach(caseElement => {
+      var itemElement = createElement('div', '', {});
+      itemElement.append(...Array.from(caseElement.children));
+      result.get(`${caseElement.getAttribute('path')}`, itemElement);
+    });
+    switchElement.replaceWith(result.#viewElement);
+    return result;
   }
 }

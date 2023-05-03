@@ -4,14 +4,16 @@ import { isLooked, scrollToElement } from './utils.js';
 export class ListBox {
   // title of listbox is unique
   // direction of listbox (forword|backword)
-  #selection_direction: direction = 'forword';
-  #effective_hist_elements: HTMLElement[] = [];
+  private selection_direction: direction = 'forword';
+  // this is for get the not effective elements when update to unvisible elements
+  private effective_hist_elements: HTMLElement[] = [];
   // array represnt all listbox declared before
   static #all: ListBox[] = [];
   // shortcut of on listbox
   public shortcuts: shortcutConfigurationsList;
   // the name of row iterable
   public rowname: string = '';
+  // configurations of the list box such as movable, scrolling, selection, redirect, clipboard
   public configurations: configListBox = {
     movable: true,
     scrolling: true,
@@ -20,15 +22,11 @@ export class ListBox {
     clipboard: true,
   };
   // on submit functions
-  protected onSubmitFunctions: submitListener[] = [];
-  protected onSelectionFunctions: Function[] = [];
-  // on change content functions
-  /**
-   *
-   * @param e MouseEvent for when click down in element change this element to selected element
-   * @returns {void}
-   */
-  #pointer_down_function = (e: MouseEvent): void => {
+  protected onfunctionsubmit: submitListener[] = [];
+  // on selection functions
+  protected onfunctionsselection: Function[] = [];
+  // when select one item this function will be call
+  private pointer_down_function = (e: MouseEvent): void => {
     var effective = this.EFFECTIVE_ELEMENTS;
     var mainsElements = effective.filter(element => element.contains(e.target as HTMLElement));
     if (!mainsElements.length) this.select();
@@ -43,20 +41,16 @@ export class ListBox {
         var end = items.indexOf(element);
         if (end <= start) {
           [start, end] = [end, start];
-          this.#selection_direction = 'backword';
-        } else this.#selection_direction = 'forword';
+          this.selection_direction = 'backword';
+        } else this.selection_direction = 'forword';
         this.select(...items.slice(start, end + 1));
       } else {
         this.select(mainElement);
       }
     }
   };
-  /**
-   *
-   * @param e MouseEvent for when click in element change this element to selected element
-   * @returns {void}
-   */
-  #click_function = (e: MouseEvent): void => {
+  // when submit in a item this function is will be call
+  private click_function = (e: MouseEvent): void => {
     if (e.altKey || e.shiftKey) return;
     var focusElements = this.ITEMS.filter(ele => ele.contains(e.target as HTMLElement));
     if (!focusElements.length) return;
@@ -64,12 +58,8 @@ export class ListBox {
     for (let i = 1; i < focusElements.length; i++) focusElement = focusElements[i].contains(focusElement) ? focusElement : focusElements[i];
     focusElement && this.submit('click', focusElement);
   };
-  /**
-   *
-   * @param e DragEvent for when drag element to other place
-   * @returns
-   */
-  #drag_function = (e: DragEvent): void => {
+  // when drag a element this function is gone be call
+  private drag_function = (e: DragEvent): void => {
     var { x, y, target } = e;
     var element = document.elementFromPoint(x, y);
     if (!element) return;
@@ -77,7 +67,6 @@ export class ListBox {
     if (!row) return;
     row.after(target as HTMLElement);
   };
-  //
   constructor(public root: HTMLElement, title: string = `${root.ariaLabel}`) {
     if (ListBox.#all.find(({ title: tlt }) => tlt == title)) throw Error('cannot be used same label in tow difrent listbox.');
     this.root.ariaLabel = title;
@@ -128,21 +117,20 @@ export class ListBox {
       inner: null,
     };
   }
-  // getters
   get drag() {
     return Boolean(this.root.ondragend);
   }
   get click() {
-    return this.root.onclick === this.#click_function;
+    return this.root.onclick === this.click_function;
   }
   get mouse() {
-    return this.root.onmouseover == this.#pointer_down_function;
+    return this.root.onmouseover == this.pointer_down_function;
   }
   get title() {
     return `${this.root.ariaLabel}`;
   }
   get selectiondirection() {
-    return this.#selection_direction;
+    return this.selection_direction;
   }
   get ITEMS() {
     return Array.from(this.root.children) as HTMLElement[];
@@ -170,25 +158,23 @@ export class ListBox {
     return ele ? ele : null;
   }
   get ELEMENT_DIRECTION() {
-    return this.#selection_direction == 'forword' ? this.LAST_ELEMENT_SELECT : this.FIRST_ELEMENT_SELECT;
+    return this.selection_direction == 'forword' ? this.LAST_ELEMENT_SELECT : this.FIRST_ELEMENT_SELECT;
   }
-  // setters
   set drag(v: boolean) {
     v = Boolean(v);
-    this.root.ondragend = v ? this.#drag_function : null;
+    this.root.ondragend = v ? this.drag_function : null;
     this.ITEMS.forEach(ele => (ele.draggable = v));
   }
   set click(flag) {
-    this.root.onclick = flag ? this.#click_function : null;
-    this.root.onpointerdown = flag ? this.#pointer_down_function : null;
+    this.root.onclick = flag ? this.click_function : null;
+    this.root.onpointerdown = flag ? this.pointer_down_function : null;
   }
   set mouse(flag) {
-    this.root.onmouseover = flag ? this.#pointer_down_function : null;
+    this.root.onmouseover = flag ? this.pointer_down_function : null;
     this.root.onmouseleave = flag ? () => this.select() : null;
   }
-  // methods
   /**
-   * true if element is effective and can be focus
+   * true if element is effective and can be selected and false otherways
    * @param element
    * @returns
    */
@@ -197,46 +183,76 @@ export class ListBox {
   }
   /**
    * change no effective element to effective element and also (reverse)
-   * @param element
-   * @returns
+   * @param flag if is't true the element is gonna be effective
+   * @param element the element for test
    */
   setEffective(element: HTMLElement, flag: boolean) {
     element.ariaDisabled = `${!flag}`;
     if (!flag) element.ariaSelected = 'false';
   }
+  /**
+   * get element if is selected or no
+   * true if is selected
+   * @param element the element needed to test for
+   */
   getSelect(element: HTMLElement) {
     return this.getEffective(element) && element.ariaSelected == 'true';
   }
+  /**
+   * make a element as selected element
+   * @param flag if is't true then element is gonna be selected
+   */
+  setSelect(element: HTMLElement, flag: boolean): boolean {
+    var b = this.getEffective(element);
+    if (!b) return false;
+    element.ariaSelected = `${flag}`;
+    return true;
+  }
+  /**
+   * control for make a element is (un)visible
+   * @param element the element needed to test for
+   * @param flag the flag represent the changes if is't true then element is visible otherways is false
+   */
   setShow(element: HTMLElement, flag: boolean) {
     element.style.display = flag ? '' : 'none';
     if (!flag) {
-      if (this.getEffective(element)) this.#effective_hist_elements.push(element);
+      if (this.getEffective(element)) this.effective_hist_elements.push(element);
       this.setEffective(element, false);
     } else {
-      var index = this.#effective_hist_elements.indexOf(element);
+      var index = this.effective_hist_elements.indexOf(element);
       if (index >= 0) {
-        this.#effective_hist_elements.splice(index, 1);
+        this.effective_hist_elements.splice(index, 1);
         this.setEffective(element, true);
       }
     }
   }
+  /**
+   * get element if is't unvisble or visible
+   * @param element the element needed to test for
+   * @returns
+   */
   getShow(element: HTMLElement): boolean {
-    return true;
+    return element.style.display == '' || this.getEffective(element);
   }
-  setSelect(element: HTMLElement, flag: boolean): boolean {
-    var b = this.getEffective(element);
-    if (!b) {
-      return false;
-    }
-    element.ariaSelected = `${flag}`;
-    return true;
-  }
+  /**
+   * make manys elements as effecetives element and cann be focused
+   * @param elements the elements gonna be effecetive
+   */
   effective(...elements: HTMLElement[]) {
     this.ITEMS.forEach(ele => this.setEffective(ele, elements.includes(ele)));
   }
+  /**
+   * make manys elements as selectives element and cann be focused
+   * @param elements the elements gonna be selectives
+   */
   select(...elements: HTMLElement[]) {
     this.ITEMS.forEach(ele => this.setSelect(ele, elements.includes(ele)));
   }
+  /**
+   * goto the forword direction that means is down or right in the app direction
+   * @param count is represent the number of steps for forwording
+   * @returns
+   */
   forword(count: number) {
     if (!this.configurations.movable) return;
     var { LAST_ELEMENT_SELECT, MIN_ELEMENT_EFFECTIVE } = this;
@@ -253,8 +269,11 @@ export class ListBox {
       this.select(ele);
       if (this.configurations.scrolling && !isLooked(ele)) scrollToElement(ele, -1);
     }
-    this.onSelectionFunctions.forEach(fn => fn('forword'));
+    this.onfunctionsselection.forEach(fn => fn('forword'));
   }
+  /**
+   * like forword but for go back
+   */
   backword(count: number) {
     if (!this.configurations.movable) return;
     var { FIRST_ELEMENT_SELECT, MAX_ELEMENT_EFFCTIVE } = this;
@@ -271,19 +290,19 @@ export class ListBox {
       this.select(ele);
       if (this.configurations.scrolling && !isLooked(ele)) scrollToElement(ele, 0);
     }
-    this.onSelectionFunctions.forEach(fn => fn('backword'));
+    this.onfunctionsselection.forEach(fn => fn('backword'));
   }
   forwordSelection(count: number) {
     if (!count) {
       this.scroll('forword');
-      this.onSelectionFunctions.forEach(fn => fn('forword'));
+      this.onfunctionsselection.forEach(fn => fn('forword'));
       return;
     }
     var { FIRST_ELEMENT_SELECT: first, LAST_ELEMENT_SELECT: last } = this;
-    if (first == last) this.#selection_direction = 'forword';
-    var element = this.#selection_direction == 'forword' ? last : first;
+    if (first == last) this.selection_direction = 'forword';
+    var element = this.selection_direction == 'forword' ? last : first;
     if (!element) return;
-    if (this.#selection_direction == 'forword') {
+    if (this.selection_direction == 'forword') {
       var nextElementSibling = element.nextElementSibling;
       while (nextElementSibling && !this.getEffective(nextElementSibling as HTMLElement)) nextElementSibling = nextElementSibling.nextElementSibling;
       nextElementSibling && this.setSelect(nextElementSibling as HTMLElement, true);
@@ -293,14 +312,14 @@ export class ListBox {
   backwordSelection(count: number) {
     if (!count) {
       this.scroll('backword');
-      this.onSelectionFunctions.forEach(fn => fn('backword'));
+      this.onfunctionsselection.forEach(fn => fn('backword'));
       return;
     }
     var { FIRST_ELEMENT_SELECT: first, LAST_ELEMENT_SELECT: last } = this;
-    if (first == last) this.#selection_direction = 'backword';
-    var element = this.#selection_direction == 'forword' ? last : first;
+    if (first == last) this.selection_direction = 'backword';
+    var element = this.selection_direction == 'forword' ? last : first;
     if (!element) return;
-    if (this.#selection_direction == 'backword') {
+    if (this.selection_direction == 'backword') {
       var previousElementSibling = element.previousElementSibling;
       while (previousElementSibling && !this.getEffective(previousElementSibling as HTMLElement)) previousElementSibling = previousElementSibling.previousElementSibling;
       previousElementSibling && this.setSelect(previousElementSibling as HTMLElement, true);
@@ -308,28 +327,28 @@ export class ListBox {
     this.backwordSelection(count - 1);
   }
   onsubmit(listener: submitListener) {
-    typeof listener == 'function' && this.onSubmitFunctions.push(listener);
+    typeof listener == 'function' && this.onfunctionsubmit.push(listener);
     return this;
   }
   offsubmit(listener: submitListener) {
-    var index = this.onSubmitFunctions.indexOf(listener);
+    var index = this.onfunctionsubmit.indexOf(listener);
     if (index < 0) return false;
-    this.onSubmitFunctions.splice(index, 1);
+    this.onfunctionsubmit.splice(index, 1);
     return true;
   }
   onselection(listener: submitListener) {
-    typeof listener == 'function' && this.onSelectionFunctions.push(listener);
+    typeof listener == 'function' && this.onfunctionsselection.push(listener);
     return this;
   }
   offselection(listener: submitListener) {
-    var index = this.onSelectionFunctions.indexOf(listener);
+    var index = this.onfunctionsselection.indexOf(listener);
     if (index < 0) return false;
-    this.onSelectionFunctions.splice(index, 1);
+    this.onfunctionsselection.splice(index, 1);
     return true;
   }
   submit(type: submitTypePress = 'call', element = this.ELEMENT_DIRECTION) {
     if (!this.SELECTD_ELEMENTS.length || this.rowname === 'treeitem') return;
-    this.onSubmitFunctions.forEach(fn => fn(type, element!));
+    this.onfunctionsubmit.forEach(fn => fn(type, element!));
   }
   scroll(flag: direction = 'forword') {
     var { ELEMENT_DIRECTION: element } = this;
@@ -362,6 +381,10 @@ export class ListBox {
     this.shortcuts.status.cancel.targets = targets;
   }
   static get all() {
-    return this.#all;
+    return [...this.#all];
+  }
+  static title(title: string) {
+    var list = this.#all.find(({ title: t }) => t == title);
+    return list || null;
   }
 }

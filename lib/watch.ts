@@ -1,7 +1,7 @@
 import { createElement } from './utils.js';
 export class Watch {
   #value: string = '';
-  #nodes: Set<HTMLSpanElement> = new Set();
+  private nodes: Set<HTMLSpanElement> = new Set();
   static #all: Watch[] = [];
   #name: string;
   constructor(name: string) {
@@ -18,31 +18,53 @@ export class Watch {
     return this.#value;
   }
   set value(v: string) {
-    this.#nodes.forEach(node => {
+    this.nodes.forEach(node => {
       node.innerHTML = v;
       node.setAttribute(`data-${this.#name}`, v);
     });
     this.#value = v;
   }
+  enables(...elements: HTMLElement[]) {
+    return elements.map(ele => this.enable(ele));
+  }
   enable(element: HTMLElement) {
     const node = createElement('span', this.#value, {});
     node.setAttribute(`data-${this.#name}`, this.#value);
     element.appendChild(node);
-    this.#nodes.add(node);
+    this.nodes.add(node);
     return node;
   }
   disable(element: HTMLElement) {
     var node = Array.from(element.children).find(ele => ele.hasAttribute(`data-${this.#name}`));
     if (node) {
-      this.#nodes.delete(node as HTMLSpanElement);
+      this.nodes.delete(node as HTMLSpanElement);
       node.remove();
     }
     return node as HTMLElement;
+  }
+  disables(...elements: HTMLElement[]) {
+    return elements.map(ele => this.disable(ele));
   }
   static get all() {
     return [...this.#all];
   }
   static get(name: string) {
     return Watch.all.find(({ name: n }) => n == name) || null;
+  }
+  static get settings() {
+    var o: object = Object.create(null);
+    this.#all.forEach(a => {
+      Object.defineProperty(o, a.#name, {
+        get() {
+          return a.#value;
+        },
+        set(v: string) {
+          a.value = v;
+        },
+        configurable: false,
+        enumerable: true,
+      });
+    });
+    return o;
   }
 }

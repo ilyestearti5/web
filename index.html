@@ -4,23 +4,63 @@
     <meta charset="UTF-8" />
     <link
       rel="stylesheet"
-      href="./css/main.css"
+      href="./out/main.css"
     />
-    <title>Desktop App</title>
+    <style>
+      ::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+      }
+      .scroll-hidden::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+      }
+      .content {
+        height: 200px;
+      }
+    </style>
+    <title>My Frame Work</title>
   </head>
   <body>
+    <div class="scrolltion relative">
+      <div class="content p-3 overflow-y-auto scroll-hidden">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat
+        perferendis eos velit culpa quas ex nemo reprehenderit minus. Molestias
+        minima tempora numquam ex provident porro dicta deleniti at
+        reprehenderit saepe assumenda et magni itaque, possimus veritatis, nihil
+        magnam quibusdam iusto rem illo consectetur quia eligendi. Cupiditate
+        non vitae repellendus delectus, deleniti voluptatibus eum iusto a.
+        Consequuntur, voluptatem nisi temporibus cupiditate quae alias autem a
+        aut, consequatur repellat placeat minima quos inventore minus explicabo,
+        tempore soluta saepe. Ex blanditiis commodi velit? Voluptas neque,
+        repellat nisi eligendi nemo natus odio possimus est asperiores impedit!
+        Dolorem facilis vitae dolores! Officiis, quidem accusantium. Illo
+        quaerat tempora perspiciatis, fugit eos dolor blanditiis nesciunt soluta
+        temporibus minima earum iure enim? Ut dolor, repellendus eius unde
+        dolorum voluptatibus alias expedita sint, sunt modi totam minus? Quae,
+        nobis ut sunt dolorem dolorum perspiciatis, odio similique iusto,
+        nostrum dignissimos optio! Fugit deserunt ad nulla magnam aperiam sit
+        illum, delectus nam eum itaque ipsum nesciunt iste explicabo eos hic
+        minima fugit, inventore velit dicta quaerat aliquam, quos repellat hic
+        aliquid eos ut quae officiis quidem exercitationem incidunt similique.
+        Obcaecati atque excepturi perferendis debitis vero quaerat nesciunt,
+        incidunt repudiandae, natus veniam quos, exercitationem odio omnis
+        accusantium quasi. Recusandae soluta corporis neque accusamus, enim
+        fugiat accusantium totam eum quasi delectus hic, ullam adipisci quo.
+        Ullam, consequuntur?
+      </div>
+      <div
+        class="scrolling absolute pointer-events-none top-0 left-0 right-0 bottom-0 overflow-y-auto"
+      ></div>
+      <div class="scroll-bar w-2 absolute top-0 right-0 bottom-0">
+        <span class="scroller inline-block absolute left-0 right-0 bg-red-600"></span>
+      </div>
+    </div>
     <script
       src="./renderer.js"
+      async
+      defer
       type="module"
     ></script>
-    <!-- code -->
-    <script>
-      for (let i = 0; i < 100; i++) {}
-    </script>
-    <div>Hello World</div>
-    <span>Ahmed Anes <span>Ines</span></span>
-    <script>
-      for (let i = 0; i < 100; i++) {}
-    </script>
   </body>
 </html>

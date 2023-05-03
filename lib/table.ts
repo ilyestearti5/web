@@ -104,12 +104,12 @@ export class Table<T> extends Iterations<T> {
     return result;
   }
   override async copy() {
-    if (!this.configurations.clipboard) return;
+    if (!this.configurations.clipboard) throw Error('cannot use the clipboard shortcuts');
     var selectedData = this.SELECTD_ELEMENTS.map(element => this.json(element));
     await navigator.clipboard.writeText(JSON.stringify(selectedData, undefined, 1));
   }
   override async cut() {
-    if (!this.configurations.clipboard) return;
+    if (!this.configurations.clipboard) throw Error('cannot use the clipboard shortcuts');
     var selectedData = this.SELECTD_ELEMENTS.map(element => {
       element.remove();
       return this.json(element);
@@ -117,6 +117,7 @@ export class Table<T> extends Iterations<T> {
     await navigator.clipboard.writeText(JSON.stringify(selectedData, undefined, 1));
   }
   override async paste(timeout: number, limit: number): Promise<(T & row)[]> {
+    if (!this.configurations.clipboard) throw Error('cannot use the clipboard shortcuts');
     var array = Array.from(JSON.parse(await navigator.clipboard.readText())) as T[];
     var { SELECTD_ELEMENTS: selectedElement, LAST_ELEMENT_SELECT: lastSelectedElement } = this;
     var result: (T & row)[] = [];
@@ -158,7 +159,7 @@ export class Table<T> extends Iterations<T> {
       allData[j + 1] = body;
     }
   }
-  async methode<R extends keyof methodesTableMap<T>>(methode: R, input: methodesTableMap<T>[R], element: HTMLElement, timeout: number, limit: number) {
+  async methode<R extends keyof methodesTableMap<T>>(methode: R, input: methodesTableMap<T>[R], element: HTMLElement = this.ITEMS[0], timeout: number, limit: number) {
     this.throwLoading();
     this.isloading = true;
     var result: (T & row)[] = [];
@@ -183,7 +184,7 @@ export class Table<T> extends Iterations<T> {
     this.isloading = false;
     return result;
   }
-  methodeSync<R extends keyof methodesTableMap<T>>(methode: R, input: methodesTableMap<T>[R], element: HTMLElement) {
+  methodeSync<R extends keyof methodesTableMap<T>>(methode: R, input: methodesTableMap<T>[R], element: HTMLElement = this.ITEMS[0]) {
     this.throwLoading();
     this.isloading = true;
     var result: (T & row)[] = [];
@@ -214,5 +215,8 @@ export class Table<T> extends Iterations<T> {
   }
   static override create<R>(title: string, defaultValue: R): Table<R> {
     return super.create(title, defaultValue) as Table<R>;
+  }
+  static override title(title: string) {
+    return (this.all.find(({ title: t }) => title == t) as Table<any>) || null;
   }
 }

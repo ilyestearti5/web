@@ -4,14 +4,15 @@ export class KeyboardShortcut {
   static separatorKeys: string = '|';
   static #main_keys: modifiersKeys[] = ['ctrl', 'shift', 'alt'];
   static #all: Set<KeyboardShortcut> = new Set();
-  #on_down_fn: listenerKeyboardShortcut[] = [];
-  #on_up_fn: listenerKeyboardShortcut[] = [];
-  #on_press_fn: listenerKeyboardShortcut[] = [];
+  private onfunctionsdown: listenerKeyboardShortcut[] = [];
+  private onfunctionsup: listenerKeyboardShortcut[] = [];
+  private onfunctionspress: listenerKeyboardShortcut[] = [];
   #main_fn = (event: KeyboardEvent) => {
     var { ctrlKey: ctrl, altKey: alt, shiftKey: shift, type } = event;
     var k = event[this.from].toLowerCase();
     k = KeyboardShortcut.#main_keys.includes(k as modifiersKeys) ? '' : k == ' ' ? 'space' : k;
-    k = ['control'].includes(k) ? '' : k;
+    k = ['control', 'shift', 'alt'].includes(k) ? '' : k;
+    if (k == '') return;
     var o: propertyShortcut = {
       ctrl,
       alt,
@@ -21,15 +22,15 @@ export class KeyboardShortcut {
     if (!this.#activate || !this.isvalide(o)) return;
     switch (type) {
       case 'keydown': {
-        this.#on_down_fn.forEach(fn => fn(o, event, 'key'));
+        this.onfunctionsdown.forEach(fn => fn(o, event, 'key'));
         break;
       }
       case 'keyup': {
-        this.#on_up_fn.forEach(fn => fn(o, event, 'key'));
+        this.onfunctionsup.forEach(fn => fn(o, event, 'key'));
         break;
       }
       case 'press': {
-        this.#on_press_fn.forEach(fn => fn(o, event, 'key'));
+        this.onfunctionspress.forEach(fn => fn(o, event, 'key'));
       }
     }
   };
@@ -140,33 +141,33 @@ export class KeyboardShortcut {
     return this.#isvalide(short);
   }
   ondown(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.#on_down_fn.push(listener);
+    typeof listener == 'function' && this.onfunctionsdown.push(listener);
     return this;
   }
   onup(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.#on_up_fn.push(listener);
+    typeof listener == 'function' && this.onfunctionsup.push(listener);
     return this;
   }
   onpress(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.#on_press_fn.push(listener);
+    typeof listener == 'function' && this.onfunctionspress.push(listener);
     return this;
   }
   offdown(listener: listenerKeyboardShortcut): boolean {
-    var index = this.#on_down_fn.indexOf(listener);
+    var index = this.onfunctionsdown.indexOf(listener);
     if (index < 0) return false;
-    this.#on_down_fn.splice(index, 1);
+    this.onfunctionsdown.splice(index, 1);
     return true;
   }
   offup(listener: listenerKeyboardShortcut): boolean {
-    var index = this.#on_up_fn.indexOf(listener);
+    var index = this.onfunctionsup.indexOf(listener);
     if (index < 0) return false;
-    this.#on_up_fn.splice(index, 1);
+    this.onfunctionsup.splice(index, 1);
     return true;
   }
   offpress(listener: listenerKeyboardShortcut): boolean {
-    var index = this.#on_press_fn.indexOf(listener);
+    var index = this.onfunctionspress.indexOf(listener);
     if (index < 0) return false;
-    this.#on_press_fn.splice(index, 1);
+    this.onfunctionspress.splice(index, 1);
     return true;
   }
   on(event: shortcutActivation, listener: listenerKeyboardShortcut): KeyboardShortcut {
@@ -176,9 +177,9 @@ export class KeyboardShortcut {
     return this[`off${event}`](listener);
   }
   clear(when: shortcutActivation) {
-    if (when == 'down') this.#on_down_fn = [];
-    else if (when == 'up') this.#on_up_fn = [];
-    else if (when == 'press') this.#on_press_fn = [];
+    if (when == 'down') this.onfunctionsdown = [];
+    else if (when == 'up') this.onfunctionsup = [];
+    else if (when == 'press') this.onfunctionspress = [];
     this.when[when] = false;
   }
   changeFrom(value: 'key' | 'code') {
@@ -242,15 +243,15 @@ export class KeyboardShortcut {
     press.forEach(pressType => {
       switch (pressType) {
         case 'down': {
-          ready.forEach(s => s.#on_down_fn.forEach(fn => fn(shortcut, null, 'call')));
+          ready.forEach(s => s.onfunctionsdown.forEach(fn => fn(shortcut, null, 'call')));
           break;
         }
         case 'up': {
-          ready.forEach(s => s.#on_up_fn.forEach(fn => fn(shortcut, null, 'call')));
+          ready.forEach(s => s.onfunctionsup.forEach(fn => fn(shortcut, null, 'call')));
           break;
         }
         case 'press': {
-          ready.forEach(s => s.#on_press_fn.forEach(fn => fn(shortcut, null, 'call')));
+          ready.forEach(s => s.onfunctionspress.forEach(fn => fn(shortcut, null, 'call')));
         }
         default: {
         }
@@ -267,15 +268,15 @@ export class KeyboardShortcut {
     for (let pressType of press) {
       switch (pressType) {
         case 'down': {
-          s.#on_down_fn.forEach(fn => fn(s!.#propertys, null, 'call'));
+          s.onfunctionsdown.forEach(fn => fn(s!.#propertys, null, 'call'));
           break;
         }
         case 'up': {
-          s.#on_up_fn.forEach(fn => fn(s!.#propertys, null, 'call'));
+          s.onfunctionsup.forEach(fn => fn(s!.#propertys, null, 'call'));
           break;
         }
         case 'press': {
-          s.#on_press_fn.forEach(fn => fn(s!.#propertys, null, 'call'));
+          s.onfunctionspress.forEach(fn => fn(s!.#propertys, null, 'call'));
         }
       }
     }

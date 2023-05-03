@@ -10,10 +10,20 @@ export interface convertionPropertyShortcut {
   object: propertyShortcut;
   string: string;
 }
+export interface visiblityFunctionResult {
+  readonly visible: boolean;
+  open(): void;
+  close(): void;
+  toggle(): void;
+}
 export interface whenShortcutOn {
   down: boolean;
   up: boolean;
   press: boolean;
+}
+export interface _ResultMap {
+  all: HTMLElement[];
+  one: HTMLElement | null;
 }
 export interface configListBox {
   movable: boolean;
@@ -32,31 +42,31 @@ export interface configurationToolBar<T> {
   element: HTMLAnchorElement;
 }
 export interface directionShortcutWithFull {
-  forword: Sh;
-  backword: Sh;
-  fullforword: Sh;
-  fullbackword: Sh;
+  readonly forword: Sh;
+  readonly backword: Sh;
+  readonly fullforword: Sh;
+  readonly fullbackword: Sh;
 }
 export interface directionShortcutWithoutFull {
-  forword: Sh;
-  backword: Sh;
+  readonly forword: Sh;
+  readonly backword: Sh;
 }
 export interface shortcutConfigurationsList {
   clipboard: null | {
-    copy: Sh;
-    paste: Sh;
-    cut: Sh;
+    readonly copy: Sh;
+    readonly paste: Sh;
+    readonly cut: Sh;
   };
-  selection: directionShortcutWithFull & { all: Sh };
+  selection: directionShortcutWithFull & { readonly all: Sh };
   move: directionShortcutWithFull;
   status: {
-    submit: Sh;
-    cancel: Sh;
+    readonly submit: Sh;
+    readonly cancel: Sh;
   };
   find: null | directionShortcutWithoutFull;
   inner: null | {
-    open: Sh;
-    close: Sh;
+    readonly open: Sh;
+    readonly close: Sh;
   };
 }
 export interface tree<T> {
@@ -100,22 +110,41 @@ export interface Menu {
   inner: 1 | 0;
 }
 export interface creationDirection {
-  input: [keyof HTMLElementTagNameMap, string, object] | HTMLElement;
+  body: HTMLElement | [keyof HTMLElementTagNameMap, string, object];
   inner: creationDirection[];
   fn: (element: HTMLElement) => Promise<void>;
 }
-// data types
 export interface Os {
   windows: 'ctrl';
   mac: 'cmd';
   luix: 'ctrl';
 }
-export type modifiersKeys<os extends keyof Os = 'windows'> = Os[os] | 'shift' | 'alt';
-export type listenerKeyboardShortcut = (combinition: propertyShortcut, event: KeyboardEvent | null, type: 'key' | 'call') => void;
+export interface pathOfSwitch {
+  element: HTMLElement;
+  path: string;
+}
+export type modifiersKeys<os extends keyof Os = 'windows'> =
+  | Os[os]
+  | 'shift'
+  | 'alt';
+export type listenerKeyboardShortcut = (
+  combinition: propertyShortcut,
+  event: KeyboardEvent | null,
+  type: 'key' | 'call',
+) => void;
 export type direction = 'forword' | 'backword';
-export type submitListener = (type: submitTypePress, element: HTMLElement) => void;
+export type submitListener = (
+  type: submitTypePress,
+  element: HTMLElement,
+) => void;
 export type submitTypePress = 'call' | 'keypress' | 'click';
 export type orderBy = 'ASC' | 'DESC';
 export type shortcutActivation = 'down' | 'up' | 'press';
 export type callBackQuery<T> = (data: T, index: number) => string;
 export type timer<T> = number | ((value: T, index: number) => number);
+export type creationFunction<T> = (
+  input: T,
+  create: (value: keyof T) => HTMLSpanElement,
+  rowElement: HTMLElement,
+  contentElement: HTMLElement,
+) => HTMLElement[];
