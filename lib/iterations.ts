@@ -1,12 +1,19 @@
 import { KeyboardShortcut as Sh } from './keyboardshortcuts.js';
 import { ListBox } from './listbox.js';
-import { row, creationFunction } from './types.js';
+import { row, creationFunction, dataReading } from './types.js';
 import { createElement as crt, defaultObject as defO, forEachAsync as each, isLooked as like } from './utils.js';
 export class Iterations<T> extends ListBox {
   public isloading: boolean = false;
   private hiddenPropertys: (keyof T)[] = [];
   public searcherKey: keyof T;
   protected histroy: [] = [];
+  protected readSetFn: dataReading<T>['set'] = (c, p, v): void => {
+    c.innerHTML = v;
+  };
+  protected readGetFn: dataReading<T>['get'] = (c, p): number | string | boolean => {
+    var string = c.innerText;
+    return isNaN(+string) ? ((string = string.trim()) === 'true' || string === 'false' ? (string == 'true' ? true : false) : string) : +string;
+  };
   protected creationFunction: creationFunction<T> = (input, c) => {
     return this.propertys.map(prop => {
       var columnElement = c(prop);
@@ -89,6 +96,8 @@ export class Iterations<T> extends ListBox {
     );
     contentElement.append(...array);
     result.appendChild(contentElement);
+    var rd = this.readRow(result);
+    this.propertys.forEach(s => (rd[s] = rd[s]));
     return result;
   }
   readRow(element: HTMLElement): T & row {
@@ -98,14 +107,15 @@ export class Iterations<T> extends ListBox {
     var cols = this.items(element);
     var array: Function[] = [];
     for (let Prop in this.defaultValues) typeof this.defaultValues[Prop] == 'function' && array.push(this.defaultValues[Prop] as Function);
+    var fn1 = this.readGetFn;
+    var fn2 = this.readSetFn;
     this.propertys.forEach((prop, index) => {
       Object.defineProperty(result, prop, {
         get() {
-          var string = cols[index].innerText;
-          return isNaN(+string) ? ((string = string.trim()) === 'true' || string === 'false' ? (string == 'true' ? true : false) : string) : +string;
+          return fn1(cols[index], prop);
         },
         set(v) {
-          cols[index].innerHTML = `${v}`;
+          fn2(cols[index], prop, `${v}`);
           array.forEach(fn => fn(result));
         },
         enumerable: false,
@@ -127,13 +137,16 @@ export class Iterations<T> extends ListBox {
     return super.ITEMS.filter(ele => ele.getAttribute('role') == this.rowname);
   }
   addLine(element = this.ITEMS.at(-1), num: number = 1) {
+    var array: HTMLDivElement[] = [];
     if (element) {
       for (let i = 0; i < num; i++) {
         var line = crt('div', '', { role: 'line' });
+        array.push(line);
         element.after(line);
         element = line;
       }
     }
+    return array;
   }
   removeLine(element = this.ITEMS.at(-1) || null) {
     if (element) {
@@ -201,7 +214,13 @@ export class Iterations<T> extends ListBox {
   }
   setCreationFunction(fn: creationFunction<T>) {
     this.creationFunction = fn;
-    this.ITEMS.forEach(rowElement => {});
+    // this.ITEMS.forEach(rowElement => {});
     return this;
+  }
+  setGetReadingFunction(fn: dataReading<T>['get']) {
+    this.readGetFn = fn;
+  }
+  setSetReadingFunction(fn: dataReading<T>['set']) {
+    this.readSetFn = fn;
   }
 }

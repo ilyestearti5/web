@@ -59,7 +59,7 @@ export function extractElementSync(element: HTMLElement) {
 export var calc = (exprision: string): number => Function(`return +${exprision}`)();
 export var between = (max: number = 10, min: number = 0) => Math.trunc(Math.random() * (max - 1 - min)) + min;
 export var randomItem = <T>(array: T[]): { value: T; index: number } => {
-  var index = between(array.length);
+  var index = between(array.length + 1);
   return {
     value: array[index],
     index,

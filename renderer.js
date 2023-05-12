@@ -1,22 +1,30 @@
-import { Table } from './lib/table.js';
-
-var tb = Table.create('dt', { name: 'unkown' });
-
-document.body.prepend(tb.root);
-
-await tb.methode(
-  'append',
-  'Anes,Akrem,Islam,Ines,Ahsen'.split(',').map(name => {
-    return { name };
+import { TreeLinear } from './lib/index.js';
+var tree = TreeLinear.create('Explorer', { id: ({ name }) => 'no provied for ' + name, name: ' - ', inner: true });
+tree.setHiddenPropertys('inner', 'id');
+tree.setTreePropertys({ property: 'inner', value: true });
+tree.methodeSync(
+  'insert',
+  '',
+  'Ahmed,Islam,Akrem,Ines,Ilyes'.split(',').map(name => {
+    return {
+      body: {
+        name,
+      },
+      innerTree: 'Ahmed,Islam,Akrem,Ines,Ilyes'.split(',').map(name => {
+        return {
+          body: {
+            name,
+            inner: false,
+          },
+        };
+      }),
+    };
   }),
 );
-tb.addLine();
-await tb.methode(
-  'append',
-  'Anes,Akrem,Islam,Ines,Ahsen'
-    .split(',')
-    .reverse()
-    .map(name => {
-      return { name };
-    }),
-);
+
+document.body.prepend(tree.root);
+tree.setCallbackQuery(({ name }) => name);
+tree.separator = '.';
+tree.addLine(tree.convertTo('Ahmed', 'element'), 1);
+tree.addLine(tree.convertTo('Islam', 'element'), 2);
+tree.addLine(tree.convertTo('Islam.Ahmed', 'element'), 1);

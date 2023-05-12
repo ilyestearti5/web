@@ -123,6 +123,10 @@ export interface pathOfSwitch {
   element: HTMLElement;
   path: string;
 }
+export interface dataReading<T> {
+  set: (columnElement: HTMLElement, property: keyof T, value: string) => void;
+  get: (columnElement: HTMLElement, property: keyof T) => number | string | boolean;
+}
 export type modifiersKeys<os extends keyof Os = 'windows'> = Os[os] | 'shift' | 'alt';
 export type listenerKeyboardShortcut = (combinition: propertyShortcut, event: KeyboardEvent | null, type: 'key' | 'call') => void;
 export type direction = 'forword' | 'backword';

@@ -74,7 +74,7 @@ export class TreeLinear<T> extends Itr<T> {
     var initLvl = this.getLevel(element);
     var { nextElementSibling } = element;
     var result: HTMLElement[] = [];
-    while (nextElementSibling && initLvl < this.getLevel(nextElementSibling as HTMLElement)) {
+    while (nextElementSibling && (this.#isLine(nextElementSibling as HTMLElement) || initLvl < this.getLevel(nextElementSibling as HTMLElement))) {
       var ele = nextElementSibling as HTMLElement;
       if (!this.#isLine(ele) && this.getLevel(ele) == initLvl + 1) result.push(ele);
       nextElementSibling = nextElementSibling.nextElementSibling;

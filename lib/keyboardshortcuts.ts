@@ -1,8 +1,15 @@
-import { convertionPropertyShortcut, listenerKeyboardShortcut, modifiersKeys, propertyShortcut, shortcutActivation, whenShortcutOn } from './types.js';
+import {
+  convertionPropertyShortcut,
+  listenerKeyboardShortcut,
+  modifiersKeys,
+  propertyShortcut,
+  shortcutActivation,
+  whenShortcutOn,
+} from "./types.js";
 export class KeyboardShortcut {
-  static separatorShortcuts: string = '+';
-  static separatorKeys: string = '|';
-  static #main_keys: modifiersKeys[] = ['ctrl', 'shift', 'alt'];
+  static separatorShortcuts: string = "+";
+  static separatorKeys: string = "|";
+  static #main_keys: modifiersKeys[] = ["ctrl", "shift", "alt"];
   static #all: Set<KeyboardShortcut> = new Set();
   private onfunctionsdown: listenerKeyboardShortcut[] = [];
   private onfunctionsup: listenerKeyboardShortcut[] = [];
@@ -10,27 +17,27 @@ export class KeyboardShortcut {
   #main_fn = (event: KeyboardEvent) => {
     var { ctrlKey: ctrl, altKey: alt, shiftKey: shift, type } = event;
     var k = event[this.from].toLowerCase();
-    k = KeyboardShortcut.#main_keys.includes(k as modifiersKeys) ? '' : k == ' ' ? 'space' : k;
-    k = ['control', 'shift', 'alt'].includes(k) ? '' : k;
-    if (k == '') return;
+    k = KeyboardShortcut.#main_keys.includes(k as modifiersKeys) ? "" : k == " " ? "space" : k;
+    k = ["control", "shift", "alt"].includes(k) ? "" : k;
+    if (k == "") return;
     var o: propertyShortcut = {
       ctrl,
       alt,
       shift,
-      keys: k == '' ? [] : [k],
+      keys: k == "" ? [] : [k],
     };
     if (!this.#activate || !this.isvalide(o)) return;
     switch (type) {
-      case 'keydown': {
-        this.onfunctionsdown.forEach(fn => fn(o, event, 'key'));
+      case "keydown": {
+        this.onfunctionsdown.forEach(fn => fn(o, event, "key"));
         break;
       }
-      case 'keyup': {
-        this.onfunctionsup.forEach(fn => fn(o, event, 'key'));
+      case "keyup": {
+        this.onfunctionsup.forEach(fn => fn(o, event, "key"));
         break;
       }
-      case 'press': {
-        this.onfunctionspress.forEach(fn => fn(o, event, 'key'));
+      case "press": {
+        this.onfunctionspress.forEach(fn => fn(o, event, "key"));
       }
     }
   };
@@ -45,9 +52,10 @@ export class KeyboardShortcut {
     keys: [],
   };
   targets: HTMLElement[] | null = null;
-  #label: string = '';
-  constructor(label: string, propertys: propertyShortcut, private from: 'key' | 'code' = 'key') {
-    if (Array.from(KeyboardShortcut.#all).some(s => s.label == label)) throw Error('Cannot be Used to Shortcut Has The Same Label');
+  #label: string = "";
+  constructor(label: string, propertys: propertyShortcut, private from: "key" | "code" = "key") {
+    if (Array.from(KeyboardShortcut.#all).some(s => s.label == label))
+      throw Error("Cannot be Used to Shortcut Has The Same Label");
     this.#label = label;
     this.#propertys = propertys;
     this.when.down = true;
@@ -104,52 +112,62 @@ export class KeyboardShortcut {
     v.down = Boolean(v.down);
     v.up = Boolean(v.up);
     if (v.down != this.#down) {
-      if (v.down) document.addEventListener('keydown', this.#main_fn);
-      else document.removeEventListener('keydown', this.#main_fn);
+      if (v.down) document.addEventListener("keydown", this.#main_fn);
+      else document.removeEventListener("keydown", this.#main_fn);
       this.#down = v.down;
     }
     if (v.up != this.#up) {
-      if (v.up) document.addEventListener('keyup', this.#main_fn);
-      else document.removeEventListener('keyup', this.#main_fn);
+      if (v.up) document.addEventListener("keyup", this.#main_fn);
+      else document.removeEventListener("keyup", this.#main_fn);
       this.#up = v.up;
     }
     if (v.press != this.#press) {
-      if (v.press) document.addEventListener('keypress', this.#main_fn);
-      else document.removeEventListener('keypress', this.#main_fn);
+      if (v.press) document.addEventListener("keypress", this.#main_fn);
+      else document.removeEventListener("keypress", this.#main_fn);
       this.#press = v.press;
     }
   }
   get text(): string {
     return KeyboardShortcut.#toString(this.#propertys);
   }
-  get status(): 'global' | 'local' {
-    return this.targets ? 'local' : 'global';
+  get status(): "global" | "local" {
+    return this.targets ? "local" : "global";
   }
   #change(content: string | propertyShortcut) {
-    this.#propertys = KeyboardShortcut.convertto(content, 'object');
+    this.#propertys = KeyboardShortcut.convertto(content, "object");
   }
   change(content: string | propertyShortcut) {
     this.#change(content);
     return this;
   }
   #isvalide(short: string | propertyShortcut) {
-    var shortcut = KeyboardShortcut.convertto(short, 'object');
-    if (KeyboardShortcut.#main_keys.some(k => typeof this.#propertys[k] == 'boolean' && this.#propertys[k] != shortcut[k]) || (Array.isArray(this.#propertys.keys) && this.#propertys.keys.every(value => (shortcut.keys ? !shortcut.keys.includes(value) : false))) || (Array.isArray(this.targets) && !this.targets.includes(document.activeElement as HTMLElement))) return false;
+    var shortcut = KeyboardShortcut.convertto(short, "object");
+    if (
+      KeyboardShortcut.#main_keys.some(
+        k => typeof this.#propertys[k] == "boolean" && this.#propertys[k] != shortcut[k],
+      ) ||
+      (Array.isArray(this.#propertys.keys) &&
+        this.#propertys.keys.every(value =>
+          shortcut.keys ? !shortcut.keys.includes(value) : false,
+        )) ||
+      (Array.isArray(this.targets) && !this.targets.includes(document.activeElement as HTMLElement))
+    )
+      return false;
     return true;
   }
   isvalide(short: string | propertyShortcut) {
     return this.#isvalide(short);
   }
   ondown(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.onfunctionsdown.push(listener);
+    typeof listener == "function" && this.onfunctionsdown.push(listener);
     return this;
   }
   onup(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.onfunctionsup.push(listener);
+    typeof listener == "function" && this.onfunctionsup.push(listener);
     return this;
   }
   onpress(listener: listenerKeyboardShortcut): KeyboardShortcut {
-    typeof listener == 'function' && this.onfunctionspress.push(listener);
+    typeof listener == "function" && this.onfunctionspress.push(listener);
     return this;
   }
   offdown(listener: listenerKeyboardShortcut): boolean {
@@ -177,19 +195,19 @@ export class KeyboardShortcut {
     return this[`off${event}`](listener);
   }
   clear(when: shortcutActivation) {
-    if (when == 'down') this.onfunctionsdown = [];
-    else if (when == 'up') this.onfunctionsup = [];
-    else if (when == 'press') this.onfunctionspress = [];
+    if (when == "down") this.onfunctionsdown = [];
+    else if (when == "up") this.onfunctionsup = [];
+    else if (when == "press") this.onfunctionspress = [];
     this.when[when] = false;
   }
-  setFrom(value: 'key' | 'code') {
-    this.from = value == 'key' ? 'key' : 'code';
+  setFrom(value: "key" | "code") {
+    this.from = value == "key" ? "key" : "code";
     return this;
   }
   getFrom() {
     return this.from;
   }
-  static #toProp(keystring: string = ''): propertyShortcut {
+  static #toProp(keystring: string = ""): propertyShortcut {
     var o: propertyShortcut = {
       ctrl: false,
       shift: false,
@@ -200,58 +218,83 @@ export class KeyboardShortcut {
     this.#main_keys.forEach(key => {
       var fd = array.find(k => k.startsWith(key));
       if (fd) {
-        o[key] = fd.endsWith('?') ? undefined : true;
+        o[key] = fd.endsWith("?") ? undefined : true;
       }
     });
-    var modifiersKeys = [...this.#main_keys, ...this.#main_keys.map(s => s + '?')];
+    var modifiersKeys = [...this.#main_keys, ...this.#main_keys.map(s => s + "?")];
     var finded = array.find(k => !modifiersKeys.includes(k));
     o.keys =
-      finded == 'all'
+      finded == "all"
         ? undefined
         : finded
         ? finded
             .split(this.separatorKeys)
             .map(s => s.trim())
-            .filter(k => k !== '')
+            .filter(k => k !== "")
         : [];
     return o;
   }
   static #toString(keyproperty: propertyShortcut): string {
     var string: string[] = [];
     this.#main_keys.forEach(mn_key => {
-      if (keyproperty[mn_key] || typeof keyproperty[mn_key] == 'undefined') string.push(mn_key + (keyproperty[mn_key] ? '' : '?'));
+      if (keyproperty[mn_key] || typeof keyproperty[mn_key] == "undefined")
+        string.push(mn_key + (keyproperty[mn_key] ? "" : "?"));
     });
     if (Array.isArray(keyproperty.keys)) {
       if (keyproperty.keys.length) string.push(keyproperty.keys.join(this.separatorKeys));
-    } else string.push('all');
+    } else string.push("all");
     return string.join(this.separatorShortcuts);
   }
-  static convertto<T extends keyof convertionPropertyShortcut>(property: propertyShortcut | string, to: T): convertionPropertyShortcut[T] {
-    return (to == 'object' ? (typeof property === 'string' ? this.#toProp(property) : property) : typeof property === 'string' ? property : this.#toString(property)) as convertionPropertyShortcut[T];
+  static convertto<T extends keyof convertionPropertyShortcut>(
+    property: propertyShortcut | string,
+    to: T,
+  ): convertionPropertyShortcut[T] {
+    return (
+      to == "object"
+        ? typeof property === "string"
+          ? this.#toProp(property)
+          : property
+        : typeof property === "string"
+        ? property
+        : this.#toString(property)
+    ) as convertionPropertyShortcut[T];
   }
-  static #create(label: string = '', combinition: propertyShortcut | string = '', targets: null | HTMLElement[] = null, from: 'key' | 'code'): KeyboardShortcut {
-    var result = new this(label, this.convertto(combinition, 'object'), from);
+  static #create(
+    label: string = "",
+    combinition: propertyShortcut | string = "",
+    targets: null | HTMLElement[] = null,
+    from: "key" | "code",
+  ): KeyboardShortcut {
+    var result = new this(label, this.convertto(combinition, "object"), from);
     result.targets = targets;
     return result;
   }
-  static create(label: string = '', combinition: propertyShortcut | string = '', targets: null | HTMLElement[] = null, from: 'key' | 'code' = 'key') {
+  static create(
+    label: string = "",
+    combinition: propertyShortcut | string = "",
+    targets: null | HTMLElement[] = null,
+    from: "key" | "code" = "key",
+  ) {
     return this.#create(label, combinition, targets, from);
   }
-  static #exec(combinition: string | propertyShortcut, press: shortcutActivation[]): Set<KeyboardShortcut> {
-    var shortcut = this.convertto(combinition, 'object');
+  static #exec(
+    combinition: string | propertyShortcut,
+    press: shortcutActivation[],
+  ): Set<KeyboardShortcut> {
+    var shortcut = this.convertto(combinition, "object");
     var ready = new Set(Array.from(this.#all).filter(shrt => shrt.isvalide(shortcut)));
     press.forEach(pressType => {
       switch (pressType) {
-        case 'down': {
-          ready.forEach(s => s.onfunctionsdown.forEach(fn => fn(shortcut, null, 'call')));
+        case "down": {
+          ready.forEach(s => s.onfunctionsdown.forEach(fn => fn(shortcut, null, "call")));
           break;
         }
-        case 'up': {
-          ready.forEach(s => s.onfunctionsup.forEach(fn => fn(shortcut, null, 'call')));
+        case "up": {
+          ready.forEach(s => s.onfunctionsup.forEach(fn => fn(shortcut, null, "call")));
           break;
         }
-        case 'press': {
-          ready.forEach(s => s.onfunctionspress.forEach(fn => fn(shortcut, null, 'call')));
+        case "press": {
+          ready.forEach(s => s.onfunctionspress.forEach(fn => fn(shortcut, null, "call")));
         }
         default: {
         }
@@ -262,27 +305,30 @@ export class KeyboardShortcut {
   static exec(combinition: string | propertyShortcut, ...press: shortcutActivation[]) {
     return this.#exec(combinition, press);
   }
-  static #execcommand(label: string, press: shortcutActivation[] = ['down']): KeyboardShortcut | null {
+  static #execcommand(
+    label: string,
+    press: shortcutActivation[] = ["down"],
+  ): KeyboardShortcut | null {
     var s = Array.from(this.#all).find(({ label: lab }) => lab == label);
     if (!s) return null;
     for (let pressType of press) {
       switch (pressType) {
-        case 'down': {
-          s.onfunctionsdown.forEach(fn => fn(s!.#propertys, null, 'call'));
+        case "down": {
+          s.onfunctionsdown.forEach(fn => fn(s!.#propertys, null, "call"));
           break;
         }
-        case 'up': {
-          s.onfunctionsup.forEach(fn => fn(s!.#propertys, null, 'call'));
+        case "up": {
+          s.onfunctionsup.forEach(fn => fn(s!.#propertys, null, "call"));
           break;
         }
-        case 'press': {
-          s.onfunctionspress.forEach(fn => fn(s!.#propertys, null, 'call'));
+        case "press": {
+          s.onfunctionspress.forEach(fn => fn(s!.#propertys, null, "call"));
         }
       }
     }
     return s;
   }
-  static execcommand(label: string, press: shortcutActivation[] = ['down']) {
+  static execcommand(label: string, press: shortcutActivation[] = ["down"]) {
     return this.#execcommand(label, press);
   }
   static #watch(...elements: HTMLElement[]) {
@@ -290,8 +336,8 @@ export class KeyboardShortcut {
       `watch:${elements
         .filter(ele => ele.ariaLabel)
         .map(({ ariaLabel }) => `${ariaLabel}`)
-        .join(' - ')}`,
-      'ctrl?+shift?+alt?+all',
+        .join(" - ")}`,
+      "ctrl?+shift?+alt?+all",
       elements,
     );
     short.when = {
@@ -304,7 +350,7 @@ export class KeyboardShortcut {
   static watch(...elements: HTMLElement[]) {
     return this.#watch(...elements);
   }
-  static label(labelName: string = ''): KeyboardShortcut | null {
+  static label(labelName: string = ""): KeyboardShortcut | null {
     var fd = Array.from(this.#all).find(sh => sh.#label == labelName);
     return fd ? fd : null;
   }
@@ -312,11 +358,11 @@ export class KeyboardShortcut {
     return Array.from(this.#all);
   }
 }
-KeyboardShortcut.create('Reload Page', 'ctrl+r', null, 'key').ondown((cmb, keyboard) => {
+KeyboardShortcut.create("Reload Page", "ctrl+r", null, "key").ondown((cmb, keyboard) => {
   keyboard && keyboard.preventDefault();
   window.location.reload();
 });
-KeyboardShortcut.create('Close Window', 'ctrl+w', null, 'key').ondown((cmb, keyboard) => {
+KeyboardShortcut.create("Close Window", "ctrl+w", null, "key").ondown((cmb, keyboard) => {
   keyboard && keyboard.preventDefault();
   window.close();
 });

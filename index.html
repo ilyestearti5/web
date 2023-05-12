@@ -6,42 +6,6 @@
       rel="stylesheet"
       href="./out/main.css"
     />
-    <style>
-      body {
-        min-height: 100vh;
-      }
-      :root {
-        --level-size: 50px;
-      }
-      [role='tree'] {
-        background-color: #8882;
-        border-radius: 5px;
-      }
-      [role='tree'] [role='treeitem']:hover {
-        background-color: #8881;
-      }
-      [role='treeitem'] {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-      }
-      [role='treeitem'] [role='content'] {
-        padding: 5px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-      }
-      [role='tree']:not([aria-label]) > [role='treegrid'] {
-        position: relative;
-        width: 170px;
-      }
-      [role='treegrid'] > [role='tree'] {
-        position: absolute;
-        left: 100%;
-        top: 0px;
-      }
-    </style>
     <title>My Frame Work</title>
   </head>
   <body class="bg-slate-900 text-white">
